@@ -335,45 +335,61 @@
         
         function handleAuthClick() { tokenClient.requestAccessToken(); }
 
-        async function startDriveSync() {
+      async function startDriveSync() {
     const syncBtnText = document.getElementById('sync-text');
     syncBtnText.innerText = "Connexion...";
 
     try {
-        // 1. Chercher si le fichier existe déjà
+        // 1. Chercher si le fichier existe déjà sur le Drive
         const response = await gapi.client.drive.files.list({
             q: "name = 'elite_planner_2026.json' and trashed = false",
             fields: 'files(id, name)'
         });
         const files = response.result.files;
 
-        const metadata = {
-            name: 'elite_planner_2026.json',
-            mimeType: 'application/json'
-        };
-        const fileContent = JSON.stringify(state);
-        const file = new Blob([fileContent], { type: 'application/json' });
-
         if (files.length > 0) {
-            // --- CAS 1 : LE FICHIER EXISTE -> ON LE MET À JOUR (UPDATE) ---
             const fileId = files[0].id;
-            syncBtnText.innerText = "Mise à jour...";
+            
+            // --- ÉTAPE A : TÉLÉCHARGEMENT (Pour récupérer les infos des autres appareils) ---
+            syncBtnText.innerText = "Récupération...";
+            const resDownload = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }
+            });
+            
+            if (resDownload.ok) {
+                const cloudData = await resDownload.json();
+                // On fusionne : on garde les données locales mais on complète avec le Cloud
+                // Ou plus simple : on adopte la version du Cloud si elle est plus complète
+                state = cloudData; 
+                localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+                
+                // Mettre à jour l'interface immédiatement
+                document.getElementById('year-vision').value = state.vision.goal || "";
+                document.getElementById('year-why').value = state.vision.why || "";
+                document.getElementById('year-results').value = state.vision.results || "";
+                updateProgress();
+                if(document.getElementById('page-step').classList.contains('active')) renderMonths();
+                if(document.getElementById('page-way').classList.contains('active')) renderCalendar();
+            }
 
-            // On utilise la méthode PATCH pour écraser le contenu du fichier existant
+            // --- ÉTAPE B : MISE À JOUR (Pour envoyer nos modifs actuelles) ---
+            syncBtnText.innerText = "Sauvegarde...";
             await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${gapi.client.getToken().access_token}`,
                     'Content-Type': 'application/json'
                 },
-                body: fileContent
+                body: JSON.stringify(state)
             });
 
-            syncBtnText.innerText = "Cloud Mis à jour !";
+            syncBtnText.innerText = "Cloud Synchro ✓";
+
         } else {
-            // --- CAS 2 : LE FICHIER N'EXISTE PAS -> ON LE CRÉE (CREATE) ---
+            // --- ÉTAPE C : CRÉATION (Si c'est la toute première fois) ---
             syncBtnText.innerText = "Création...";
-            
+            const metadata = { name: 'elite_planner_2026.json', mimeType: 'application/json' };
+            const file = new Blob([JSON.stringify(state)], { type: 'application/json' });
             const formData = new FormData();
             formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
             formData.append('file', file);
@@ -384,14 +400,13 @@
                 body: formData
             });
 
-            syncBtnText.innerText = "Fichier Créé !";
+            syncBtnText.innerText = "Premier Backup Créé !";
         }
 
-        // Petit effet visuel de succès
         setTimeout(() => { syncBtnText.innerText = "SYNCHRONISER DRIVE"; }, 3000);
 
     } catch (err) {
-        console.error("Erreur de synchronisation :", err);
+        console.error("Erreur :", err);
         syncBtnText.innerText = "Erreur de Synchro";
     }
 }
