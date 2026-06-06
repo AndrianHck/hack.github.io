@@ -336,44 +336,65 @@
         function handleAuthClick() { tokenClient.requestAccessToken(); }
 
         async function startDriveSync() {
-            document.getElementById('sync-text').innerText = "Vérification...";
-            try {
-                const response = await gapi.client.drive.files.list({ q: "name = 'elite_planner_2026.json'", fields: 'files(id, name)' });
-                const files = response.result.files;
-                
-                if (files.length > 0) {
-                    // Téléchargement
-                    const fileId = files[0].id;
-                    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                        headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }
-                    });
-                    const driveData = await res.json();
-                    state = driveData;
-                    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-                    document.getElementById('sync-text').innerText = "Fusion Réussie !";
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    // Création du fichier
-                    const metadata = { name: 'elite_planner_2026.json', mimeType: 'application/json' };
-                    const fileContent = JSON.stringify(state);
-                    const file = new Blob([fileContent], {type: 'application/json'});
-                    const formData = new FormData();
-                    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-                    formData.append('file', file);
+    const syncBtnText = document.getElementById('sync-text');
+    syncBtnText.innerText = "Connexion...";
 
-                    await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` },
-                        body: formData
-                    });
-                    document.getElementById('sync-text').innerText = "Fichier Créé !";
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('sync-text').innerText = "Erreur de Synchro";
-            }
+    try {
+        // 1. Chercher si le fichier existe déjà
+        const response = await gapi.client.drive.files.list({
+            q: "name = 'elite_planner_2026.json' and trashed = false",
+            fields: 'files(id, name)'
+        });
+        const files = response.result.files;
+
+        const metadata = {
+            name: 'elite_planner_2026.json',
+            mimeType: 'application/json'
+        };
+        const fileContent = JSON.stringify(state);
+        const file = new Blob([fileContent], { type: 'application/json' });
+
+        if (files.length > 0) {
+            // --- CAS 1 : LE FICHIER EXISTE -> ON LE MET À JOUR (UPDATE) ---
+            const fileId = files[0].id;
+            syncBtnText.innerText = "Mise à jour...";
+
+            // On utilise la méthode PATCH pour écraser le contenu du fichier existant
+            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${gapi.client.getToken().access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: fileContent
+            });
+
+            syncBtnText.innerText = "Cloud Mis à jour !";
+        } else {
+            // --- CAS 2 : LE FICHIER N'EXISTE PAS -> ON LE CRÉE (CREATE) ---
+            syncBtnText.innerText = "Création...";
+            
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            formData.append('file', file);
+
+            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` },
+                body: formData
+            });
+
+            syncBtnText.innerText = "Fichier Créé !";
         }
 
+        // Petit effet visuel de succès
+        setTimeout(() => { syncBtnText.innerText = "SYNCHRONISER DRIVE"; }, 3000);
+
+    } catch (err) {
+        console.error("Erreur de synchronisation :", err);
+        syncBtnText.innerText = "Erreur de Synchro";
+    }
+}
         window.onload = () => {
             document.getElementById('year-vision').value = state.vision.goal || "";
             document.getElementById('year-why').value = state.vision.why || "";
