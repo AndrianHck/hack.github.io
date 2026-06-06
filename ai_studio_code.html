@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Planner Pro 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus+Jakarta Sans', sans-serif; background-color: #0b0f1a; color: #e2e8f0; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .active-link { background: #4f46e5; color: white !important; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- SIDEBAR / NAV -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-slate-800 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 flex flex-col">
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fas fa-rocket text-white"></i>
+                </div>
+                <span class="font-bold text-lg tracking-tight">ELITE <span class="text-indigo-500">2026</span></span>
+            </div>
+
+            <!-- BOUTON SYNC DRIVE -->
+            <button id="sync-btn" onclick="handleAuthClick()" class="w-full bg-slate-800 hover:bg-slate-700 text-[10px] font-bold py-3 rounded-xl mb-8 flex items-center justify-center gap-2 border border-slate-700 transition">
+                <i class="fab fa-google-drive text-emerald-500"></i>
+                <span id="sync-text">SYNCHRONISER DRIVE</span>
+            </button>
+            
+            <nav class="space-y-2">
+                <button onclick="showPage('home')" id="nav-home" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800">
+                    <i class="fas fa-crosshairs w-5"></i> Vision Annuelle
+                </button>
+                <button onclick="showPage('step')" id="nav-step" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800">
+                    <i class="fas fa-list-check w-5"></i> Objectifs Mois
+                </button>
+                <button onclick="showPage('way')" id="nav-way" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800">
+                    <i class="fas fa-calendar-day w-5"></i> Calendrier
+                </button>
+            </nav>
+        </div>
+
+        <!-- PROGRESS BAR NAVBAR -->
+        <div class="mt-auto p-6 border-t border-slate-800">
+            <div class="flex justify-between text-[10px] mb-2 uppercase font-bold text-slate-500">
+                <span>Efficacité Totale</span>
+                <span id="global-perc">0%</span>
+            </div>
+            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div id="global-bar" class="bg-indigo-500 h-full w-0 transition-all duration-1000"></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MOBILE OVERLAY -->
+    <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-screen relative">
+        <!-- HEADER -->
+        <header class="h-[70px] border-b border-slate-800 flex items-center justify-between px-6 bg-[#0b0f1a]/50 backdrop-blur z-30">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMenu()" class="md:hidden text-xl text-slate-400"><i class="fas fa-bars"></i></button>
+                <h2 id="page-title" class="text-lg font-bold">Vision Annuelle</h2>
+            </div>
+            <!-- Month Selector for Calendar -->
+            <div id="calendar-controls" class="hidden flex items-center gap-4">
+                <button onclick="changeMonth(-1)" class="p-2 hover:text-indigo-500"><i class="fas fa-chevron-left"></i></button>
+                <span id="current-month-display" class="text-sm font-bold w-28 text-center">Janvier</span>
+                <button onclick="changeMonth(1)" class="p-2 hover:text-indigo-500"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </header>
+
+        <!-- PAGE : HOME -->
+        <div id="page-home" class="page-content active p-6 md:p-10 overflow-y-auto custom-scroll">
+            <div class="max-w-4xl mx-auto space-y-10">
+                <div class="text-center">
+                    <h3 class="text-indigo-500 font-bold uppercase tracking-[0.3em] text-[10px] mb-4">Focus Majeur 2026</h3>
+                    <textarea id="year-vision" oninput="saveLocal()" class="w-full bg-transparent text-3xl md:text-5xl font-extrabold text-center outline-none resize-none placeholder:text-slate-900" placeholder="VOTRE MISSION ICI..."></textarea>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="glass p-8 rounded-3xl">
+                        <h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px] tracking-widest">Motivation & Pourquoi</h4>
+                        <textarea id="year-why" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed custom-scroll" placeholder="Inscrivez vos motivations..."></textarea>
+                    </div>
+                    <div class="glass p-8 rounded-3xl">
+                        <h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px] tracking-widest">Preuves de Réussite</h4>
+                        <textarea id="year-results" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed custom-scroll" placeholder="Quels seront les résultats concrets ?"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE : STEP (MOIS) -->
+        <div id="page-step" class="page-content p-6 md:p-8 overflow-y-auto custom-scroll">
+            <div id="months-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Injecté par JS -->
+            </div>
+        </div>
+
+        <!-- PAGE : WAY (CALENDRIER) -->
+        <div id="page-way" class="page-content p-4 md:p-8 overflow-hidden flex flex-col xl:flex-row gap-6">
+            <div class="flex-1 overflow-x-auto custom-scroll">
+                <div class="min-w-[600px] mb-8">
+                    <div class="grid grid-cols-7 mb-4 text-center">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">Lun</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">Mar</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">Mer</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">Jeu</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">Ven</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">Sam</div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">Dim</div>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
+                </div>
+            </div>
+            
+            <!-- TASK ASIDE (DRAWER) -->
+            <aside id="day-detail" class="fixed inset-y-0 right-0 w-full md:w-96 glass md:rounded-l-3xl p-6 flex flex-col z-[60] translate-x-full transition-transform duration-300 hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h3 id="selected-day-name" class="text-xl font-bold">Lundi</h3>
+                        <p id="selected-day-full" class="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter"></p>
+                    </div>
+                    <button onclick="closeDayDetail()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="flex gap-2 mb-6">
+                    <input type="time" id="task-time" class="bg-slate-800 border border-slate-700 rounded-xl px-2 py-3 text-xs outline-none focus:ring-2 ring-indigo-500">
+                    <input type="text" id="task-text" placeholder="Nouvelle tâche..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs outline-none focus:ring-2 ring-indigo-500">
+                    <button onclick="addTask()" class="bg-indigo-600 w-12 rounded-xl hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="day-tasks" class="flex-1 space-y-3 overflow-y-auto custom-scroll pr-2"></div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- GOOGLE API CLIENTS -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+    <script>
+        // CONFIGURATION GOOGLE DRIVE
+        const API_KEY = 'AIzaSyCLCVxiUGf65S6HVE0DKWtiWgG4UgfSiJE';
+        const CLIENT_ID = '762678044357-g2p8fds4mch0qjr59fs90nuu3kjhhfm7.apps.googleusercontent.com';
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+        const dayNamesFull = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+        // ÉTAT DES DONNÉES
+        let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || {
+            vision: { goal: "", why: "", results: "" },
+            monthlyGoals: {},
+            tasks: {} // Format: "2026-01-01": [{id, time, text, done}]
+        };
+
+        let currentMonth = 0;
+        let selectedDateKey = null;
+
+        // UI & NAVIGATION
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('hidden');
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-link'));
+            document.getElementById('page-' + id).classList.add('active');
+            document.getElementById('nav-' + id).classList.add('active-link');
+            document.getElementById('page-title').innerText = document.getElementById('nav-' + id).innerText;
+            document.getElementById('calendar-controls').classList.toggle('hidden', id !== 'way');
+            if (window.innerWidth < 768 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleMenu();
+            if (id === 'step') renderMonths();
+            if (id === 'way') renderCalendar();
+        }
+
+        // CALENDRIER RÉEL 2026
+        function renderCalendar() {
+            const container = document.getElementById('calendar-grid');
+            document.getElementById('current-month-display').innerText = monthNames[currentMonth];
+            container.innerHTML = "";
+
+            const firstDay = new Date(2026, currentMonth, 1).getDay();
+            // Le 1er Janvier 2026 est un Jeudi (JS Day 4). 
+            // On veut Lun=0, Mar=1... Dim=6. Donc Jeudi=3.
+            const offset = (firstDay === 0) ? 6 : firstDay - 1;
+            const daysInMonth = new Date(2026, currentMonth + 1, 0).getDate();
+
+            for(let i=0; i<offset; i++) container.innerHTML += `<div class="opacity-10"></div>`;
+
+            for(let d=1; d<=daysInMonth; d++) {
+                const key = `2026-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const dayTasks = state.tasks[key] || [];
+                const done = dayTasks.filter(t => t.done).length;
+                const total = dayTasks.length;
+
+                container.innerHTML += `
+                    <div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 hover:border-indigo-500 cursor-pointer min-h-[75px] md:min-h-[100px] flex flex-col justify-between transition group">
+                        <span class="text-xs font-bold text-slate-500 group-hover:text-indigo-400">${d}</span>
+                        ${total > 0 ? `
+                            <div class="mt-2">
+                                <div class="text-[8px] font-bold text-slate-500 mb-1 uppercase">${done}/${total} Done</div>
+                                <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="bg-indigo-500 h-full transition-all" style="width: ${(done/total)*100}%"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+        }
+
+        function changeMonth(dir) {
+            currentMonth = (currentMonth + dir + 12) % 12;
+            renderCalendar();
+        }
+
+        // GESTION DES TACHES
+        function openDay(key, d) {
+            selectedDateKey = key;
+            const dateObj = new Date(key);
+            document.getElementById('selected-day-name').innerText = dayNamesFull[dateObj.getDay() === 0 ? 6 : dateObj.getDay()-1];
+            document.getElementById('selected-day-full').innerText = `${d} ${monthNames[currentMonth]} 2026`;
+            document.getElementById('day-detail').classList.remove('hidden');
+            setTimeout(() => document.getElementById('day-detail').classList.remove('translate-x-full'), 10);
+            renderTasks();
+        }
+
+        function closeDayDetail() {
+            document.getElementById('day-detail').classList.add('translate-x-full');
+            setTimeout(() => { document.getElementById('day-detail').classList.add('hidden'); renderCalendar(); }, 300);
+        }
+
+        function addTask() {
+            const time = document.getElementById('task-time').value || "--:--";
+            const text = document.getElementById('task-text').value;
+            if(!text) return;
+            if(!state.tasks[selectedDateKey]) state.tasks[selectedDateKey] = [];
+            state.tasks[selectedDateKey].push({ id: Date.now(), time, text, done: false });
+            document.getElementById('task-text').value = "";
+            saveLocal();
+            renderTasks();
+        }
+
+        function toggleTask(id) {
+            const task = state.tasks[selectedDateKey].find(t => t.id === id);
+            task.done = !task.done;
+            saveLocal();
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            state.tasks[selectedDateKey] = state.tasks[selectedDateKey].filter(t => t.id !== id);
+            saveLocal();
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('day-tasks');
+            const tasks = state.tasks[selectedDateKey] || [];
+            list.innerHTML = tasks.sort((a,b) => a.time.localeCompare(b.time)).map(t => `
+                <div class="flex items-center gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 group hover:border-slate-700 transition">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-5 h-5 rounded-lg accent-indigo-500 cursor-pointer">
+                    <div class="flex-1">
+                        <p class="text-[10px] font-bold text-indigo-500 mb-0.5">${t.time}</p>
+                        <p class="text-xs ${t.done ? 'line-through text-slate-500' : 'text-slate-200'}">${t.text}</p>
+                    </div>
+                    <button onclick="deleteTask(${t.id})" class="text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash-alt text-xs"></i></button>
+                </div>
+            `).join('');
+            if(!tasks.length) list.innerHTML = `<p class="text-center text-slate-600 text-xs italic py-10">Aucune tâche prévue</p>`;
+        }
+
+        // OBJECTIFS MENSUELS (STEPS)
+        function renderMonths() {
+            const grid = document.getElementById('months-grid');
+            grid.innerHTML = monthNames.map((name, i) => `
+                <div class="glass p-6 rounded-3xl border border-slate-800 group hover:border-indigo-500/50 transition">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">${name}</h3>
+                        <i class="fas fa-check-circle ${state.monthlyGoals[i] ? 'text-indigo-500' : 'text-slate-800'}"></i>
+                    </div>
+                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" 
+                        class="w-full bg-transparent h-28 outline-none text-sm placeholder:text-slate-800 resize-none custom-scroll"
+                        placeholder="Quel est l'objectif prioritaire ?">${state.monthlyGoals[i] || ""}</textarea>
+                </div>
+            `).join('');
+        }
+
+        // PERSISTANCE & SYNC DRIVE
+        function saveLocal() {
+            state.vision.goal = document.getElementById('year-vision').value;
+            state.vision.why = document.getElementById('year-why').value;
+            state.vision.results = document.getElementById('year-results').value;
+            localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+            updateProgress();
+        }
+
+        function updateProgress() {
+            let total = 0, done = 0;
+            Object.values(state.tasks).forEach(day => day.forEach(t => { total++; if(t.done) done++; }));
+            const perc = total === 0 ? 0 : Math.round((done/total)*100);
+            document.getElementById('global-bar').style.width = perc + '%';
+            document.getElementById('global-perc').innerText = perc + '%';
+        }
+
+        // GOOGLE DRIVE API ENGINE
+        function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] })); }
+        function gisLoaded() { 
+            tokenClient = google.accounts.oauth2.initTokenClient({ 
+                client_id: CLIENT_ID, 
+                scope: SCOPES, 
+                callback: (resp) => { if (resp.access_token) startDriveSync(); } 
+            }); 
+        }
+        
+        function handleAuthClick() { tokenClient.requestAccessToken(); }
+
+        async function startDriveSync() {
+            document.getElementById('sync-text').innerText = "Vérification...";
+            try {
+                const response = await gapi.client.drive.files.list({ q: "name = 'elite_planner_2026.json'", fields: 'files(id, name)' });
+                const files = response.result.files;
+                
+                if (files.length > 0) {
+                    // Téléchargement
+                    const fileId = files[0].id;
+                    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                        headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }
+                    });
+                    const driveData = await res.json();
+                    state = driveData;
+                    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+                    document.getElementById('sync-text').innerText = "Fusion Réussie !";
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    // Création du fichier
+                    const metadata = { name: 'elite_planner_2026.json', mimeType: 'application/json' };
+                    const fileContent = JSON.stringify(state);
+                    const file = new Blob([fileContent], {type: 'application/json'});
+                    const formData = new FormData();
+                    formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+                    formData.append('file', file);
+
+                    await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` },
+                        body: formData
+                    });
+                    document.getElementById('sync-text').innerText = "Fichier Créé !";
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('sync-text').innerText = "Erreur de Synchro";
+            }
+        }
+
+        window.onload = () => {
+            document.getElementById('year-vision').value = state.vision.goal || "";
+            document.getElementById('year-why').value = state.vision.why || "";
+            document.getElementById('year-results').value = state.vision.results || "";
+            showPage('home');
+            updateProgress();
+        };
+    </script>
+</body>
+</html>
