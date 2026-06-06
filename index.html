@@ -307,13 +307,17 @@
         }
 
         // PERSISTANCE & SYNC DRIVE
-        function saveLocal() {
-            state.vision.goal = document.getElementById('year-vision').value;
-            state.vision.why = document.getElementById('year-why').value;
-            state.vision.results = document.getElementById('year-results').value;
-            localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-            updateProgress();
-        }
+        // Remplace ta fonction saveLocal par celle-ci
+function saveLocal() {
+    state.vision.goal = document.getElementById('year-vision').value;
+    state.vision.why = document.getElementById('year-why').value;
+    state.vision.results = document.getElementById('year-results').value;
+    
+    // Sauvegarde immédiate dans le navigateur
+    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+    updateProgress();
+    console.log("Sauvegarde locale effectuée");
+}
 
         function updateProgress() {
             let total = 0, done = 0;
@@ -340,56 +344,36 @@
     syncBtnText.innerText = "Connexion...";
 
     try {
-        // 1. Chercher si le fichier existe déjà sur le Drive
+        // Force la sauvegarde locale avant d'envoyer
+        saveLocal();
+
+        // Chercher le fichier
         const response = await gapi.client.drive.files.list({
             q: "name = 'elite_planner_2026.json' and trashed = false",
             fields: 'files(id, name)'
         });
         const files = response.result.files;
+        const fileContent = JSON.stringify(state);
 
         if (files.length > 0) {
             const fileId = files[0].id;
-            
-            // --- ÉTAPE A : TÉLÉCHARGEMENT (Pour récupérer les infos des autres appareils) ---
-            syncBtnText.innerText = "Récupération...";
-            const resDownload = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }
-            });
-            
-            if (resDownload.ok) {
-                const cloudData = await resDownload.json();
-                // On fusionne : on garde les données locales mais on complète avec le Cloud
-                // Ou plus simple : on adopte la version du Cloud si elle est plus complète
-                state = cloudData; 
-                localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-                
-                // Mettre à jour l'interface immédiatement
-                document.getElementById('year-vision').value = state.vision.goal || "";
-                document.getElementById('year-why').value = state.vision.why || "";
-                document.getElementById('year-results').value = state.vision.results || "";
-                updateProgress();
-                if(document.getElementById('page-step').classList.contains('active')) renderMonths();
-                if(document.getElementById('page-way').classList.contains('active')) renderCalendar();
-            }
+            syncBtnText.innerText = "Sync en cours...";
 
-            // --- ÉTAPE B : MISE À JOUR (Pour envoyer nos modifs actuelles) ---
-            syncBtnText.innerText = "Sauvegarde...";
+            // UPDATE
             await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${gapi.client.getToken().access_token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(state)
+                body: fileContent
             });
-
             syncBtnText.innerText = "Cloud Synchro ✓";
-
         } else {
-            // --- ÉTAPE C : CRÉATION (Si c'est la toute première fois) ---
-            syncBtnText.innerText = "Création...";
+            // CREATE
+            syncBtnText.innerText = "Création Cloud...";
             const metadata = { name: 'elite_planner_2026.json', mimeType: 'application/json' };
-            const file = new Blob([JSON.stringify(state)], { type: 'application/json' });
+            const file = new Blob([fileContent], { type: 'application/json' });
             const formData = new FormData();
             formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
             formData.append('file', file);
@@ -399,15 +383,11 @@
                 headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` },
                 body: formData
             });
-
-            syncBtnText.innerText = "Premier Backup Créé !";
+            syncBtnText.innerText = "Cloud Créé ✓";
         }
-
-        setTimeout(() => { syncBtnText.innerText = "SYNCHRONISER DRIVE"; }, 3000);
-
     } catch (err) {
-        console.error("Erreur :", err);
-        syncBtnText.innerText = "Erreur de Synchro";
+        console.error("Erreur Drive:", err);
+        syncBtnText.innerText = "Erreur (Vérifie l'API)";
     }
 }
         window.onload = () => {
