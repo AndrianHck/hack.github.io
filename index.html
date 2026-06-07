@@ -3,59 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Planner Pro 2026 | GitHub Sync</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="data:application/manifest+json,{'name':'ElitePlanner','short_name':'Elite','display':'standalone','start_url':'/index.html','background_color':'#0b0f1a','theme_color':'#4f46e5'}">
+    <title>Elite Planner Pro 2026 | Safe Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Plus+Jakarta Sans', sans-serif; background-color: #0b0f1a; color: #e2e8f0; }
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
-        .page-content { display: none; }
+        .page-content { display: none; height: calc(100vh - 70px); overflow-y: auto; }
         .page-content.active { display: block; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-        .active-link { background: #4f46e5; color: white !important; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
-        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .active-link { background: #4f46e5 !important; color: white !important; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row overflow-hidden">
 
     <!-- SIDEBAR -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 pt-3 bg-[#0f172a] border-r border-slate-800 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 flex flex-col">
-        <div class="flex items-center gap-4 mb-6 px-4">
-            <div class="relative w-12 h-12 flex items-center justify-center border-2 border-indigo-500/30 rounded-full">
-                <div class="z-10 font-black text-2xl tracking-tighter text-white">E<span class="text-indigo-500">.</span></div>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-slate-800 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 flex flex-col">
+        <div class="p-6">
+            <div class="flex items-center gap-4 mb-6 px-2">
+                <div class="z-10 font-black text-2xl text-white">E<span class="text-indigo-500">.</span></div>
+                <div class="flex flex-col uppercase font-bold tracking-widest">
+                    <span class="text-sm">Elite</span>
+                    <span class="text-[8px] text-slate-500 -mt-1">Strategy 2026</span>
+                </div>
             </div>
-            <div class="flex flex-col">
-                <span class="font-bold text-lg tracking-[0.2em] text-white">ELITE</span>
-                <span class="text-[8px] text-slate-500 font-bold tracking-[0.4em] uppercase">GitHub Sync</span>
+
+            <!-- BOUTONS DE SYNCHRO SÉPARÉS -->
+            <div class="space-y-2 mb-6">
+                <button onclick="uploadToGitHub()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-[10px] font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition border border-emerald-400/20">
+                    <i class="fas fa-cloud-upload-alt"></i> <span id="save-text">SAUVEGARDER (Cloud)</span>
+                </button>
+                <button onclick="downloadFromGitHub()" class="w-full bg-amber-600 hover:bg-amber-500 text-[10px] font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 transition border border-amber-400/20">
+                    <i class="fas fa-cloud-download-alt"></i> <span id="load-text">RESTAURER (Cloud)</span>
+                </button>
+                <button onclick="showPage('config')" class="w-full text-slate-500 text-[9px] font-bold uppercase hover:text-indigo-400 transition text-center pt-2">
+                    <i class="fas fa-cog mr-1"></i> Paramètres Database
+                </button>
             </div>
+            
+            <nav class="space-y-1">
+                <button onclick="showPage('home')" id="nav-home" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3">Vision Annuelle</button>
+                <button onclick="showPage('step')" id="nav-step" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3">Objectifs Mois</button>
+                <button onclick="showPage('week')" id="nav-week" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3">Objectifs Semaine</button>
+                <button onclick="showPage('way')" id="nav-way" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3">Calendrier</button>
+            </nav>
         </div>
 
-        <!-- BOUTON SYNC GITHUB -->
-        <div class="px-4 space-y-2 mb-6">
-            <button id="sync-btn" onclick="syncWithGist()" class="w-full bg-slate-800 hover:bg-slate-700 text-[10px] font-bold py-3 rounded-xl flex items-center justify-center gap-2 border border-slate-700 transition">
-                <i class="fab fa-github text-white"></i>
-                <span id="sync-text">SYNCHRONISER GITHUB</span>
-            </button>
-            <button onclick="showPage('config')" class="w-full text-slate-500 text-[9px] font-bold uppercase hover:text-indigo-400 transition">
-                <i class="fas fa-cog mr-1"></i> Paramètres Database
-            </button>
-        </div>
-        
-        <nav class="flex-1 px-3 space-y-2">
-            <button onclick="showPage('home')" id="nav-home" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Vision Annuelle</button>
-            <button onclick="showPage('step')" id="nav-step" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Objectifs Mois</button>
-            <button onclick="showPage('week')" id="nav-week" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Objectifs Semaine</button>
-            <button onclick="showPage('way')" id="nav-way" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Calendrier</button>
-        </nav>
-
-        <div class="p-6 border-t border-slate-800">
+        <div class="mt-auto p-6 border-t border-slate-800">
             <div class="flex justify-between text-[10px] mb-2 uppercase font-bold text-slate-500">
-                <span>Efficacité</span>
+                <span>Efficacité Totale</span>
                 <span id="global-perc">0%</span>
             </div>
             <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
@@ -66,150 +65,148 @@
 
     <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
 
-    <main class="flex-1 flex flex-col h-screen relative">
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-screen relative overflow-hidden">
         <header class="h-[70px] border-b border-slate-800 flex items-center justify-between px-6 bg-[#0b0f1a]/50 backdrop-blur z-30">
-            <div class="flex items-center gap-4">
-                <button onclick="toggleMenu()" class="md:hidden text-xl text-slate-400"><i class="fas fa-bars"></i></button>
-                <h2 id="page-title" class="text-lg font-bold">Elite Strategy</h2>
-            </div>
+            <button onclick="toggleMenu()" class="md:hidden text-xl text-slate-400"><i class="fas fa-bars"></i></button>
+            <h2 id="page-title" class="text-lg font-bold uppercase tracking-widest text-indigo-400">Vision Annuelle</h2>
             <div id="calendar-controls" class="hidden flex items-center gap-4">
-                <button onclick="changeMonth(-1)" class="p-2 hover:text-indigo-500 transition"><i class="fas fa-chevron-left"></i></button>
-                <span id="current-month-display" class="text-sm font-bold w-28 text-center uppercase tracking-tighter">Janvier</span>
-                <button onclick="changeMonth(1)" class="p-2 hover:text-indigo-500 transition"><i class="fas fa-chevron-right"></i></button>
+                <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                <span id="current-month-display" class="text-sm font-bold w-24 text-center">Janvier</span>
+                <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
         </header>
 
-        <!-- PAGE : CONFIG (GIST) -->
-        <div id="page-config" class="page-content p-6 md:p-10 overflow-y-auto custom-scroll">
+        <!-- PAGE VISION -->
+        <div id="page-home" class="page-content active p-6 md:p-10 custom-scroll">
+            <textarea id="year-vision" oninput="saveLocal()" class="w-full bg-transparent text-3xl font-extrabold text-center outline-none resize-none mb-10 h-24" placeholder="VOTRE MISSION..."></textarea>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass p-8 rounded-3xl"><h4 class="text-indigo-400 text-xs font-bold mb-4 uppercase">Motivation</h4><textarea id="year-why" oninput="saveLocal()" class="w-full bg-transparent h-32 outline-none text-sm leading-relaxed" placeholder="Pourquoi est-ce important ?"></textarea></div>
+                <div class="glass p-8 rounded-3xl"><h4 class="text-indigo-400 text-xs font-bold mb-4 uppercase">Résultats</h4><textarea id="year-results" oninput="saveLocal()" class="w-full bg-transparent h-32 outline-none text-sm leading-relaxed" placeholder="Quels résultats ?"></textarea></div>
+            </div>
+        </div>
+
+        <!-- PAGE CONFIG -->
+        <div id="page-config" class="page-content p-6 md:p-10 custom-scroll">
             <div class="max-w-xl mx-auto glass p-8 rounded-3xl border border-indigo-500/20">
-                <h3 class="text-xl font-bold mb-2">Configuration Cloud</h3>
-                <p class="text-slate-500 text-xs mb-6 uppercase tracking-widest font-bold">Sécurisé par GitHub Gist</p>
+                <h3 class="text-xl font-bold mb-6">Paramètres Cloud GitHub</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="text-[10px] uppercase font-bold text-slate-400">Personal Access Token (ghp_...)</label>
-                        <input type="password" id="gh-token" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm mt-1 outline-none focus:ring-1 ring-indigo-500" placeholder="Ton secret token GitHub">
+                        <label class="text-[10px] uppercase font-bold text-slate-500">GitHub Personal Access Token</label>
+                        <input type="password" id="gh-token" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm mt-1 focus:ring-1 ring-indigo-500 outline-none">
                     </div>
                     <div>
-                        <label class="text-[10px] uppercase font-bold text-slate-400">Gist ID</label>
-                        <input type="text" id="gh-gist" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm mt-1 outline-none focus:ring-1 ring-indigo-500" placeholder="ID de ton fichier Gist secret">
+                        <label class="text-[10px] uppercase font-bold text-slate-500">Gist ID</label>
+                        <input type="text" id="gh-gist" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm mt-1 focus:ring-1 ring-indigo-500 outline-none">
                     </div>
-                    <button onclick="saveConfig()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-bold transition shadow-lg shadow-indigo-500/20 mt-4">
-                        ENREGISTRER & APPLIQUER
-                    </button>
+                    <button onclick="saveConfig()" class="w-full bg-indigo-600 py-3 rounded-xl font-bold hover:bg-indigo-500 transition">ENREGISTRER LA CONFIGURATION</button>
                 </div>
             </div>
         </div>
 
-        <!-- AUTRES PAGES (HOME, STEP, WEEK, WAY) - Contenu généré via JS -->
-        <div id="page-home" class="page-content active p-6 md:p-10 overflow-y-auto custom-scroll">
-            <div class="max-w-4xl mx-auto space-y-10 text-center">
-                <textarea id="year-vision" oninput="saveLocal()" class="w-full bg-transparent text-3xl md:text-5xl font-extrabold text-center outline-none resize-none placeholder:text-slate-900" placeholder="MISSION 2026..."></textarea>
-                <div class="grid md:grid-cols-2 gap-6 text-left">
-                    <div class="glass p-8 rounded-3xl"><h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px]">Motivation</h4><textarea id="year-why" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed"></textarea></div>
-                    <div class="glass p-8 rounded-3xl"><h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px]">Preuves</h4><textarea id="year-results" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed"></textarea></div>
-                </div>
-            </div>
-        </div>
+        <!-- AUTRES PAGES -->
+        <div id="page-step" class="page-content p-6 custom-scroll"><div id="months-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div></div>
+        <div id="page-week" class="page-content p-6 custom-scroll"><div id="weeks-list" class="flex flex-col gap-6 max-w-4xl mx-auto"></div></div>
+        <div id="page-way" class="page-content p-6 custom-scroll"><div id="calendar-grid" class="grid grid-cols-7 gap-2 max-w-5xl mx-auto"></div></div>
 
-        <div id="page-step" class="page-content p-6 md:p-10 custom-scroll"><div id="months-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div></div>
-        <div id="page-week" class="page-content p-4 md:p-10 custom-scroll"><div id="weeks-list" class="max-w-4xl mx-auto flex flex-col gap-6"></div></div>
-        
-        <div id="page-way" class="page-content p-4 md:p-10 custom-scroll">
-            <div class="grid grid-cols-7 mb-4 text-center text-[10px] font-bold text-slate-500 uppercase">
-                <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+        <!-- TASK DRAWER -->
+        <aside id="day-detail" class="fixed inset-y-0 right-0 w-full md:w-96 glass md:rounded-l-3xl p-6 flex flex-col z-[60] translate-x-full transition-transform duration-300 hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div><h3 id="selected-day-name" class="text-xl font-bold text-white">Jour</h3><p id="selected-day-full" class="text-[10px] text-indigo-400 font-bold uppercase"></p></div>
+                <button onclick="closeDayDetail()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center"><i class="fas fa-times"></i></button>
             </div>
-            <div id="calendar-grid" class="grid grid-cols-7 gap-2 max-w-5xl mx-auto"></div>
-            <aside id="day-detail" class="fixed inset-y-0 right-0 w-full md:w-96 glass md:rounded-l-3xl p-6 flex flex-col z-[60] translate-x-full transition-transform duration-300 hidden">
-                <div class="flex justify-between items-center mb-8">
-                    <div><h3 id="selected-day-name" class="text-xl font-bold">Jour</h3><p id="selected-day-full" class="text-[10px] text-indigo-400 font-bold uppercase"></p></div>
-                    <button onclick="closeDayDetail()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center transition"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="flex gap-2 mb-6">
-                    <input type="time" id="task-time" class="bg-slate-800 border border-slate-700 rounded-xl px-2 py-3 text-xs outline-none">
-                    <input type="text" id="task-text" placeholder="Nouvelle tâche..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs outline-none">
-                    <button onclick="addTask()" class="bg-indigo-600 w-12 rounded-xl"><i class="fas fa-plus"></i></button>
-                </div>
-                <div id="day-tasks" class="flex-1 space-y-3 overflow-y-auto custom-scroll"></div>
-            </aside>
-        </div>
+            <div class="flex gap-2 mb-6">
+                <input type="time" id="task-time" class="bg-slate-800 border border-slate-700 rounded-xl px-2 py-3 text-xs outline-none">
+                <input type="text" id="task-text" placeholder="Nouvelle tâche..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs outline-none">
+                <button onclick="addTask()" class="bg-indigo-600 w-12 rounded-xl transition hover:bg-indigo-500"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="day-tasks" class="flex-1 space-y-3 overflow-y-auto custom-scroll pr-2"></div>
+        </aside>
     </main>
 
     <script>
-        // --- ÉTAT ---
+        const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+        const dayNamesFull = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+        // ÉTAT DES DONNÉES
         let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || {};
         let config = JSON.parse(localStorage.getItem('elite_cloud_config')) || { token: "", gistId: "" };
-        
+        let currentMonth = new Date().getMonth();
+        let selectedDateKey = null;
+
         function checkState() {
             if (!state.vision) state.vision = { goal: "", why: "", results: "" };
             if (!state.monthlyGoals) state.monthlyGoals = {};
             if (!state.weeklyGoals) state.weeklyGoals = {};
             if (!state.tasks) state.tasks = {};
-            localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
         }
-        checkState();
 
-        let currentMonth = new Date().getMonth();
-        let selectedDateKey = null;
-        const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-        const dayNamesFull = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+        // --- FONCTIONS GITHUB SÉPARÉES ---
 
-        // --- GESTION GITHUB SYNC ---
+        async function uploadToGitHub() {
+            if (!config.token || !config.gistId) return alert("Configure ton Token et Gist ID.");
+            const btnText = document.getElementById('save-text');
+            btnText.innerText = "UPLOADING...";
+            
+            checkState();
+            const content = JSON.stringify(state);
+
+            try {
+                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `token ${config.token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        files: { 'elite_data.json': { content: content } }
+                    })
+                });
+
+                if (res.ok) {
+                    btnText.innerText = "SAUVEGARDE RÉUSSIE ✓";
+                } else {
+                    throw new Error("Erreur GitHub");
+                }
+            } catch (err) {
+                btnText.innerText = "ERREUR D'ENVOI";
+            }
+            setTimeout(() => btnText.innerText = "SAUVEGARDER (Cloud)", 3000);
+        }
+
+        async function downloadFromGitHub() {
+            if (!config.token || !config.gistId) return alert("Configure ton Token et Gist ID.");
+            const btnText = document.getElementById('load-text');
+            btnText.innerText = "DOWNLOADING...";
+
+            try {
+                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                    headers: { 'Authorization': `token ${config.token}` }
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    const cloudData = JSON.parse(data.files['elite_data.json'].content);
+                    state = cloudData;
+                    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+                    btnText.innerText = "RESTAURATION RÉUSSIE ✓";
+                    refreshUI();
+                } else {
+                    throw new Error("Erreur GitHub");
+                }
+            } catch (err) {
+                btnText.innerText = "ERREUR DE RÉCUPÉRATION";
+            }
+            setTimeout(() => btnText.innerText = "RESTAURER (Cloud)", 3000);
+        }
+
         function saveConfig() {
             config.token = document.getElementById('gh-token').value;
             config.gistId = document.getElementById('gh-gist').value;
             localStorage.setItem('elite_cloud_config', JSON.stringify(config));
-            alert("Configuration enregistrée !");
+            alert("Configuration sauvegardée !");
             showPage('home');
         }
 
-        async function syncWithGist() {
-            if (!config.token || !config.gistId) {
-                alert("Erreur: Token ou Gist ID manquant. Va dans Paramètres Database.");
-                showPage('config');
-                return;
-            }
+        // --- LOGIQUE MÉTIER ---
 
-            const btnText = document.getElementById('sync-text');
-            btnText.innerText = "CONNEXION GITHUB...";
-
-            try {
-                // 1. TÉLÉCHARGEMENT (GET)
-                const resGet = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-                    headers: { 'Authorization': `token ${config.token}` }
-                });
-                
-                if (resGet.ok) {
-                    const data = await resGet.json();
-                    const cloudContent = JSON.parse(data.files['elite_data.json'].content);
-                    // On fusionne (Version Cloud prioritaire)
-                    state = cloudContent;
-                    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-                    refreshUI();
-                }
-
-                // 2. ENVOI (PATCH)
-                btnText.innerText = "Mise à jour Cloud...";
-                const resPatch = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-                    method: 'PATCH',
-                    headers: { 'Authorization': `token ${config.token}` },
-                    body: JSON.stringify({
-                        files: { 'elite_data.json': { content: JSON.stringify(state) } }
-                    })
-                });
-
-                if (resPatch.ok) {
-                    btnText.innerText = "CLOUD SYNCHRO ✓";
-                } else {
-                    throw new Error("Erreur Patch");
-                }
-            } catch (err) {
-                console.error(err);
-                btnText.innerText = "ERREUR GITHUB";
-            }
-            setTimeout(() => btnText.innerText = "SYNCHRONISER GITHUB", 3000);
-        }
-
-        // --- LOGIQUE APPLICATION ---
         function showPage(id) {
             checkState();
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
@@ -228,9 +225,9 @@
         function renderMonths() {
             const grid = document.getElementById('months-grid');
             grid.innerHTML = monthNames.map((name, i) => `
-                <div class="glass p-5 rounded-2xl border border-slate-800 transition hover:border-indigo-500/20">
-                    <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4">${name}</h3>
-                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" class="w-full bg-transparent h-24 outline-none text-sm resize-none placeholder:text-slate-800">${state.monthlyGoals[i] || ""}</textarea>
+                <div class="glass p-5 rounded-3xl border border-slate-800">
+                    <h3 class="text-[10px] font-bold text-indigo-500 uppercase mb-3">${name}</h3>
+                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" class="w-full bg-transparent h-24 outline-none text-sm resize-none">${state.monthlyGoals[i] || ""}</textarea>
                 </div>`).join('');
         }
 
@@ -242,16 +239,15 @@
             const lastDay = new Date(year, currentMonth + 1, 0).getDate();
             let start = 1, week = 1;
             while (start <= lastDay) {
-                let dateIter = new Date(year, currentMonth, start);
-                let untilSun = (dateIter.getDay() === 0) ? 0 : (7 - dateIter.getDay());
-                let end = start + untilSun;
+                let d = new Date(year, currentMonth, start);
+                let end = start + (d.getDay() === 0 ? 0 : 7 - d.getDay());
                 if (end > lastDay) end = lastDay;
                 const key = `${year}-${currentMonth}-w${week}`;
                 container.innerHTML += `
-                    <div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row gap-6 transition hover:border-indigo-500/30">
-                        <div class="md:w-44 border-l-2 border-indigo-500 pl-4 flex-shrink-0">
+                    <div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row gap-6">
+                        <div class="md:w-44 border-l-2 border-indigo-500 pl-4">
                             <span class="text-[10px] font-black text-indigo-500 uppercase">Semaine 0${week}</span>
-                            <span class="text-[11px] font-bold text-slate-500 block tracking-tighter">Du ${start} au ${end} ${monthNames[currentMonth]}</span>
+                            <span class="text-[11px] font-bold text-slate-500 block tracking-tighter">Du ${start} au ${end}</span>
                         </div>
                         <textarea oninput="state.weeklyGoals['${key}'] = this.value; saveLocal()" class="flex-1 bg-slate-900/40 border border-white/5 rounded-2xl p-4 text-sm outline-none focus:ring-1 ring-indigo-500 h-24 resize-none transition">${state.weeklyGoals[key] || ""}</textarea>
                     </div>`;
@@ -272,9 +268,9 @@
                 const hasTasks = state.tasks[key] && state.tasks[key].length > 0;
                 const done = hasTasks ? state.tasks[key].filter(t => t.done).length : 0;
                 grid.innerHTML += `
-                    <div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 cursor-pointer min-h-[80px] flex flex-col justify-between transition hover:border-indigo-500">
-                        <span class="text-xs font-bold text-slate-500">${d}</span>
-                        ${hasTasks ? `<div class="h-1 bg-indigo-500 rounded-full" style="width:${(done/state.tasks[key].length)*100}%"></div>` : ''}
+                    <div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 cursor-pointer min-h-[80px] flex flex-col justify-between transition hover:border-indigo-500 group">
+                        <span class="text-xs font-bold text-slate-500 group-hover:text-indigo-400">${d}</span>
+                        ${hasTasks ? `<div class="h-1 bg-indigo-500 rounded-full w-full" style="width:${(done/state.tasks[key].length)*100}%"></div>` : ''}
                     </div>`;
             }
         }
@@ -310,7 +306,7 @@
             list.innerHTML = tasks.sort((a,b) => a.time.localeCompare(b.time)).map(t => `
                 <div class="flex items-center gap-4 p-4 bg-slate-900 rounded-xl border border-slate-800 mb-2">
                     <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-4 h-4 accent-indigo-500">
-                    <div class="flex-1 text-sm"><p class="text-[10px] text-indigo-400 font-bold">${t.time}</p><p class="${t.done ? 'line-through opacity-40 text-slate-500' : ''}">${t.text}</p></div>
+                    <div class="flex-1 text-sm"><p class="text-[10px] text-indigo-400 font-bold">${t.time}</p><p class="${t.done ? 'line-through opacity-40' : ''}">${t.text}</p></div>
                     <button onclick="deleteTask(${t.id})"><i class="fas fa-trash text-xs opacity-20 hover:opacity-100 transition"></i></button>
                 </div>`).join('');
         }
