@@ -451,17 +451,7 @@ function saveLocal() {
                 callback: (resp) => { if (resp.access_token) startDriveSync(); } 
             }); 
         }
-        async function startDriveSync() {
-        const syncBtnText = document.getElementById('sync-text');
         
-        // VERIFICATION DE SECURITE
-        if (!gapi.client || !gapi.client.drive) {
-            alert("Le moteur Google n'est pas encore chargé. Attends 2 secondes et réessaye.");
-            return;
-        }
-    
-        syncBtnText.innerText = "Connexion...";
-        // ... reste du code
         function handleAuthClick() { tokenClient.requestAccessToken(); }
 
       async function startDriveSync() {
