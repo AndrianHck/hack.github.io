@@ -119,25 +119,32 @@
             </div>
         </div>
 
-        <!-- PAGE : WEEK (OBJECTIFS SEMAINES) -->
+       <!-- PAGE : WEEK (OBJECTIFS SEMAINES) -->
         <div id="page-week" class="page-content p-4 md:p-8 overflow-y-auto custom-scroll">
             <div class="max-w-5xl mx-auto">
-                <!-- En-tête de la page avec sélecteur de mois dédié -->
-                <div class="flex items-center justify-between mb-10 bg-slate-900/50 p-4 rounded-2xl border border-white/5">
+                
+                <!-- Header de la page -->
+                <div class="glass p-6 rounded-3xl border border-white/5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
-                        <h3 class="text-indigo-400 font-bold uppercase tracking-[0.2em] text-xs mb-1">Planification Hebdomadaire</h3>
-                        <p class="text-slate-500 text-[10px]">Définissez vos priorités pour chaque segment du mois</p>
+                        <h3 class="text-indigo-400 font-bold uppercase tracking-[0.2em] text-xs">Planification Hebdomadaire</h3>
+                        <p class="text-slate-500 text-[10px] mt-1">Définissez vos priorités par tranches de 7 jours</p>
                     </div>
-                    <div class="flex items-center gap-4 bg-black/40 rounded-xl px-4 py-2 border border-white/5">
-                        <button onclick="currentMonth = (currentMonth - 1 + 12) % 12; renderWeeklyGoals();" class="hover:text-indigo-500 transition"><i class="fas fa-chevron-left text-xs"></i></button>
-                        <span id="week-month-display" class="text-sm font-black w-24 text-center text-white">Juin</span>
-                        <button onclick="currentMonth = (currentMonth + 1) % 12; renderWeeklyGoals();" class="hover:text-indigo-500 transition"><i class="fas fa-chevron-right text-xs"></i></button>
+                    
+                    <!-- Sélecteur de mois interne à la page -->
+                    <div class="flex items-center gap-4 bg-slate-900/80 rounded-xl px-4 py-2 border border-slate-700">
+                        <button onclick="currentMonth = (currentMonth - 1 + 12) % 12; renderWeeklyGoals();" class="hover:text-indigo-500 transition">
+                            <i class="fas fa-chevron-left text-xs"></i>
+                        </button>
+                        <span id="week-month-display" class="text-sm font-black w-24 text-center text-white">Juillet</span>
+                        <button onclick="currentMonth = (currentMonth + 1) % 12; renderWeeklyGoals();" class="hover:text-indigo-500 transition">
+                            <i class="fas fa-chevron-right text-xs"></i>
+                        </button>
                     </div>
                 </div>
         
-                <!-- LISTE DES SEMAINES (SANS LE QUADRILLAGE LUN/MAR) -->
-                <div id="weeks-list" class="grid grid-cols-1 gap-4">
-                    <!-- Injecté par JS : des lignes larges comme le calendrier mais pour les semaines -->
+                <!-- ZONE OÙ LES CARTES VONT APPARAÎTRE -->
+                <div id="weeks-list" class="grid grid-cols-1 gap-6">
+                    <!-- Le JavaScript va remplir cet espace -->
                 </div>
             </div>
         </div>
@@ -217,20 +224,78 @@
             document.getElementById('overlay').classList.toggle('hidden');
         }
 
+        // A mettre au tout début de ton script pour éviter les erreurs
+        if (!state.weeklyGoals) state.weeklyGoals = {};
+        
+        function renderWeeklyGoals() {
+            const container = document.getElementById('weeks-list');
+            const monthLabel = document.getElementById('week-month-display');
+            
+            if (!container) return; // Sécurité si l'ID n'est pas trouvé
+        
+            monthLabel.innerText = monthNames[currentMonth];
+            container.innerHTML = ""; // On vide avant de dessiner
+        
+            const year = 2026;
+            const daysInMonth = new Date(year, currentMonth + 1, 0).getDate();
+            
+            let weekCount = 1;
+            // On génère les cartes pour chaque tranche de 7 jours
+            for (let i = 1; i <= daysInMonth; i += 7) {
+                let startDay = i;
+                let endDay = i + 6;
+                if (endDay > daysInMonth) endDay = daysInMonth;
+        
+                const weekKey = `${year}-${currentMonth}-${weekCount}`;
+                const val = state.weeklyGoals[weekKey] || "";
+        
+                container.innerHTML += `
+                    <div class="glass p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/40 transition-all group shadow-xl">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <!-- Label gauche -->
+                            <div class="md:w-40 flex-shrink-0 border-l-2 border-indigo-500 pl-4">
+                                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">Semaine 0${weekCount}</span>
+                                <span class="text-xs font-bold text-slate-400">Du ${startDay} au ${endDay} ${monthNames[currentMonth]}</span>
+                            </div>
+                            
+                            <!-- Zone de texte (Input) -->
+                            <div class="flex-1">
+                                <textarea 
+                                    oninput="saveWeeklyGoal('${weekKey}', this.value)" 
+                                    class="w-full bg-slate-900/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none h-24 placeholder:text-slate-700 transition"
+                                    placeholder="Quels sont les objectifs critiques pour cette période ?">${val}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                weekCount++;
+            }
+        }
+        
+        function saveWeeklyGoal(key, val) {
+            if (!state.weeklyGoals) state.weeklyGoals = {};
+            state.weeklyGoals[key] = val;
+            saveLocal(); // Ta fonction qui fait localStorage.setItem
+        }
+        
         function showPage(id) {
         document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-link'));
-        document.getElementById('page-' + id).classList.add('active');
-        document.getElementById('nav-' + id).classList.add('active-link');
         
-        // Titres
+        const targetPage = document.getElementById('page-' + id);
+        const targetNav = document.getElementById('nav-' + id);
+        
+        if(targetPage) targetPage.classList.add('active');
+        if(targetNav) targetNav.classList.add('active-link');
+        
         const titles = { 'home': 'Vision Annuelle', 'step': 'Objectifs Mensuels', 'week': 'Objectifs Hebdomadaires', 'way': 'Calendrier' };
-        document.getElementById('page-title').innerText = titles[id];
+        document.getElementById('page-title').innerText = titles[id] || "Elite Planner";
     
-        // Cacher le sélecteur du calendrier si on est sur la page semaine (car elle a le sien)
-        document.getElementById('calendar-controls').classList.add('hidden');
-        if (id === 'way') document.getElementById('calendar-controls').classList.remove('hidden');
+        // Gestion du sélecteur de mois (Haut droite) : On l'affiche UNIQUEMENT sur le calendrier
+        const calControls = document.getElementById('calendar-controls');
+        if(calControls) calControls.classList.toggle('hidden', id !== 'way');
     
+        // Déclenchement des rendus
         if (id === 'step') renderMonths();
         if (id === 'week') renderWeeklyGoals();
         if (id === 'way') renderCalendar();
@@ -348,59 +413,6 @@
                 </div>
             `).join('');
         }
-
-function renderWeeklyGoals() {
-    const container = document.getElementById('weeks-list');
-    const monthLabel = document.getElementById('week-month-display');
-    monthLabel.innerText = monthNames[currentMonth];
-    container.innerHTML = "";
-
-    const daysInMonth = new Date(2026, currentMonth + 1, 0).getDate();
-    
-    let weekCount = 1;
-    // On boucle par pas de 7 jours
-    for (let i = 1; i <= daysInMonth; i += 7) {
-        let startDay = i;
-        let endDay = i + 6;
-        if (endDay > daysInMonth) endDay = daysInMonth;
-
-        const weekKey = `2026-${currentMonth}-${weekCount}`;
-        const val = state.weeklyGoals[weekKey] || "";
-
-        // Design "Elite" : Lignes larges avec indicateur de progression
-        container.innerHTML += `
-            <div class="glass p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/40 transition-all duration-300 group">
-                <div class="flex flex-col md:flex-row md:items-center gap-6">
-                    <!-- Indicateur de semaine -->
-                    <div class="md:w-32 flex-shrink-0">
-                        <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">Semaine 0${weekCount}</span>
-                        <span class="text-xs font-bold text-slate-400 whitespace-nowrap">${startDay} — ${endDay} ${monthNames[currentMonth]}</span>
-                    </div>
-                    
-                    <!-- Zone de saisie -->
-                    <div class="flex-1 relative">
-                        <textarea oninput="saveWeeklyGoal('${weekKey}', this.value)" 
-                            class="w-full bg-slate-900/40 border border-white/5 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 resize-none h-20 placeholder:text-slate-700"
-                            placeholder="Objectif stratégique de la semaine...">${val}</textarea>
-                        
-                        <!-- Décoration visuelle synchronisée -->
-                        <div class="absolute bottom-3 right-3 opacity-20 group-hover:opacity-100 transition">
-                            <i class="fas fa-pen-nib text-[10px] text-indigo-400"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        weekCount++;
-    }
-}
-
-function saveWeeklyGoal(key, val) {
-    state.weeklyGoals[key] = val;
-    // On sauvegarde localement (cela sera envoyé au Drive au prochain clic Synchro)
-    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-    updateProgress();
-}
 
         // PERSISTANCE & SYNC DRIVE
         // Remplace ta fonction saveLocal par celle-ci
