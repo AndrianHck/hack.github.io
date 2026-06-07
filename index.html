@@ -189,7 +189,7 @@
     </main>
 
     <!-- GOOGLE API CLIENTS -->
-    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://apis.google.com/js/api.js" onload="onGapiLoad()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
     <script>
@@ -226,6 +226,29 @@
         // A mettre au tout début de ton script pour éviter les erreurs
         if (!state.weeklyGoals) state.weeklyGoals = {};
         
+        function onGapiLoad() {
+    gapi.load('client', async () => {
+        await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
+        gapiInited = true;
+    });
+}
+
+function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (resp) => { if (resp.access_token) startDriveSync(); }
+    });
+    gisInited = true;
+}
+
+function handleAuthClick() {
+    if (!gapiInited || !gisInited) {
+        alert("API pas encore prête, patiente 2s et réessaie");
+        return;
+    }
+    tokenClient.requestAccessToken();
+}
         function renderWeeklyGoals() {
             const container = document.getElementById('weeks-list');
             const monthLabel = document.getElementById('week-month-display');
