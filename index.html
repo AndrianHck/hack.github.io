@@ -119,32 +119,31 @@
             </div>
         </div>
 
-       <!-- PAGE : WEEK (OBJECTIFS SEMAINES) -->
+      <!-- PAGE : WEEK (OBJECTIFS SEMAINES) -->
         <div id="page-week" class="page-content p-4 md:p-8 overflow-y-auto custom-scroll">
             <div class="max-w-5xl mx-auto">
                 
-                <!-- Header de la page -->
+                <!-- En-tête -->
                 <div class="glass p-6 rounded-3xl border border-white/5 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div>
-                        <h3 class="text-indigo-400 font-bold uppercase tracking-[0.2em] text-xs">Planification Hebdomadaire</h3>
-                        <p class="text-slate-500 text-[10px] mt-1">Définissez vos priorités par tranches de 7 jours</p>
+                        <h2 class="text-xl font-bold text-white mb-1">Planification Hebdomadaire</h2>
+                        <p class="text-slate-500 text-[10px] uppercase tracking-widest">Structure Lundi — Dimanche</p>
                     </div>
                     
-                    <!-- Sélecteur de mois interne à la page -->
                     <div class="flex items-center gap-4 bg-slate-900/80 rounded-xl px-4 py-2 border border-slate-700">
-                        <button onclick="currentMonth = (currentMonth - 1 + 12) % 12; renderWeeklyGoals();" class="hover:text-indigo-500 transition">
+                        <button onclick="currentMonth = (currentMonth - 1 + 12) % 12; renderWeeklyGoals();" class="text-slate-400 hover:text-white transition">
                             <i class="fas fa-chevron-left text-xs"></i>
                         </button>
-                        <span id="week-month-display" class="text-sm font-black w-24 text-center text-white">Juillet</span>
-                        <button onclick="currentMonth = (currentMonth + 1) % 12; renderWeeklyGoals();" class="hover:text-indigo-500 transition">
+                        <span id="week-month-display" class="text-sm font-black w-24 text-center text-white">Mai</span>
+                        <button onclick="currentMonth = (currentMonth + 1) % 12; renderWeeklyGoals();" class="text-slate-400 hover:text-white transition">
                             <i class="fas fa-chevron-right text-xs"></i>
                         </button>
                     </div>
                 </div>
         
-                <!-- ZONE OÙ LES CARTES VONT APPARAÎTRE -->
-                <div id="weeks-list" class="grid grid-cols-1 gap-6">
-                    <!-- Le JavaScript va remplir cet espace -->
+                <!-- ICI : AUCUNE GRILLE LUN/MAR, JUSTE LA LISTE DES CARTES -->
+                <div id="weeks-list" class="flex flex-col gap-6">
+                    <!-- Injecté par renderWeeklyGoals() -->
                 </div>
             </div>
         </div>
@@ -230,52 +229,60 @@
         function renderWeeklyGoals() {
             const container = document.getElementById('weeks-list');
             const monthLabel = document.getElementById('week-month-display');
-            
-            if (!container) return; // Sécurité si l'ID n'est pas trouvé
+            if (!container) return;
         
             monthLabel.innerText = monthNames[currentMonth];
-            container.innerHTML = ""; // On vide avant de dessiner
+            container.innerHTML = ""; 
         
             const year = 2026;
-            const daysInMonth = new Date(year, currentMonth + 1, 0).getDate();
+            const lastDayOfMonth = new Date(year, currentMonth + 1, 0).getDate();
             
-            let weekCount = 1;
-            // On génère les cartes pour chaque tranche de 7 jours
-            for (let i = 1; i <= daysInMonth; i += 7) {
-                let startDay = i;
-                let endDay = i + 6;
-                if (endDay > daysInMonth) endDay = daysInMonth;
+            let currentStart = 1;
+            let weekNum = 1;
         
-                const weekKey = `${year}-${currentMonth}-${weekCount}`;
-                const val = state.weeklyGoals[weekKey] || "";
+            // ALGORITHME DE DÉCOUPAGE PAR SEMAINE (Lundi-Dimanche)
+            while (currentStart <= lastDayOfMonth) {
+                let dateIter = new Date(year, currentMonth, currentStart);
+                let dayOfWeek = dateIter.getDay(); // 0: Dimanche, 1: Lundi...
+                
+                // Calculer le prochain dimanche
+                // Si c'est un dimanche (0), on reste sur le jour même. 
+                // Sinon, on ajoute (7 - jour_actuel) jours.
+                let daysUntilSunday = (dayOfWeek === 0) ? 0 : (7 - dayOfWeek);
+                let currentEnd = currentStart + daysUntilSunday;
+        
+                // Ajustement pour ne pas dépasser la fin du mois
+                if (currentEnd > lastDayOfMonth) currentEnd = lastDayOfMonth;
+        
+                const weekKey = `${year}-${currentMonth}-w${weekNum}`;
+                const val = state.weeklyGoals ? (state.weeklyGoals[weekKey] || "") : "";
         
                 container.innerHTML += `
                     <div class="glass p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/40 transition-all group shadow-xl">
                         <div class="flex flex-col md:flex-row gap-6">
-                            <!-- Label gauche -->
-                            <div class="md:w-40 flex-shrink-0 border-l-2 border-indigo-500 pl-4">
-                                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">Semaine 0${weekCount}</span>
-                                <span class="text-xs font-bold text-slate-400">Du ${startDay} au ${endDay} ${monthNames[currentMonth]}</span>
+                            <div class="md:w-44 flex-shrink-0 border-l-2 border-indigo-500 pl-4">
+                                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest block">Semaine 0${weekNum}</span>
+                                <span class="text-[11px] font-bold text-slate-400">Du ${currentStart} au ${currentEnd} ${monthNames[currentMonth]}</span>
                             </div>
-                            
-                            <!-- Zone de texte (Input) -->
                             <div class="flex-1">
                                 <textarea 
                                     oninput="saveWeeklyGoal('${weekKey}', this.value)" 
-                                    class="w-full bg-slate-900/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none h-24 placeholder:text-slate-700 transition"
-                                    placeholder="Quels sont les objectifs critiques pour cette période ?">${val}</textarea>
+                                    class="w-full bg-slate-900/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none h-24 placeholder:text-slate-800 transition"
+                                    placeholder="Objectifs stratégiques de la semaine...">${val}</textarea>
                             </div>
                         </div>
                     </div>
                 `;
-                weekCount++;
+        
+                currentStart = currentEnd + 1;
+                weekNum++;
             }
         }
         
         function saveWeeklyGoal(key, val) {
             if (!state.weeklyGoals) state.weeklyGoals = {};
             state.weeklyGoals[key] = val;
-            saveLocal(); // Ta fonction qui fait localStorage.setItem
+            saveLocal();
         }
         
         function showPage(id) {
