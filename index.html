@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Planner Pro 2026</title>
+    <title>Elite Planner Pro 2026 | GitHub Sync</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="data:application/manifest+json,{'name':'ElitePlanner','short_name':'Elite','display':'standalone','start_url':'/index.html','background_color':'#0b0f1a','theme_color':'#4f46e5'}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="data:application/manifest+json,{'name':'ElitePlanner','short_name':'Elite','display':'standalone','start_url':'/index.html','background_color':'#0b0f1a','theme_color':'#4f46e5'}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -15,7 +15,7 @@
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
         .page-content { display: none; }
         .page-content.active { display: block; animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
         .active-link { background: #4f46e5; color: white !important; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
         .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -23,45 +23,39 @@
 </head>
 <body class="min-h-screen flex flex-col md:flex-row overflow-hidden">
 
-    <!-- SIDEBAR / NAV -->
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 pt-3 bg-[#0f172a] border-r border-slate-800 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 flex flex-col">
-            <div class="flex items-center gap-4 mb-10 px-2">
-                <div class="relative w-15 h-15 flex items-center justify-center">
-                    <!-- Cercle extérieur rotatif discret -->
-                    <div class="inset-0 border-2 border-indigo-500/20 rounded-full size-fit py-3 px-4 animate-[spin_10s_linear_infinite]">
-                        <div class="z-10 font-black text-4xl tracking-tighter text-white">
-                        E<span class="text-indigo-500">.</span>
-                    </div>
-                </div>
+        <div class="flex items-center gap-4 mb-6 px-4">
+            <div class="relative w-12 h-12 flex items-center justify-center border-2 border-indigo-500/30 rounded-full">
+                <div class="z-10 font-black text-2xl tracking-tighter text-white">E<span class="text-indigo-500">.</span></div>
             </div>
-                <div class="flex flex-col">
-                    <span class="font-bold text-lg tracking-[0.3em] text-white">ELITE</span>
-                    <span class="text-[8px] text-slate-500 font-bold tracking-[0.5em] mt-1">STRATEGY 2026</span>
-                </div>
+            <div class="flex flex-col">
+                <span class="font-bold text-lg tracking-[0.2em] text-white">ELITE</span>
+                <span class="text-[8px] text-slate-500 font-bold tracking-[0.4em] uppercase">GitHub Sync</span>
             </div>
+        </div>
 
-            <!-- BOUTON SYNC DRIVE -->
-            <button id="sync-btn" onclick="handleAuthClick()" class="w-full bg-slate-800 hover:bg-slate-700 text-[10px] font-bold py-3 rounded-xl mb-8 flex items-center justify-center gap-2 border border-slate-700 transition">
-                <i class="fab fa-google-drive text-emerald-500"></i>
-                <span id="sync-text">SYNCHRONISER DRIVE</span>
+        <!-- BOUTON SYNC GITHUB -->
+        <div class="px-4 space-y-2 mb-6">
+            <button id="sync-btn" onclick="syncWithGist()" class="w-full bg-slate-800 hover:bg-slate-700 text-[10px] font-bold py-3 rounded-xl flex items-center justify-center gap-2 border border-slate-700 transition">
+                <i class="fab fa-github text-white"></i>
+                <span id="sync-text">SYNCHRONISER GITHUB</span>
             </button>
-            
-            <nav class="space-y-2">
-                <button onclick="showPage('home')" id="nav-home" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800">
-                    <i class="fas fa-crosshairs w-5"></i> Vision Annuelle
-                </button>
-                <button onclick="showPage('step')" id="nav-step" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800">
-                    <i class="fas fa-list-check w-5"></i> Objectifs Mois
-                </button>
-                <button onclick="showPage('way')" id="nav-way" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:bg-slate-800">
-                    <i class="fas fa-calendar-day w-5"></i> Calendrier
-                </button>
-            </nav>
+            <button onclick="showPage('config')" class="w-full text-slate-500 text-[9px] font-bold uppercase hover:text-indigo-400 transition">
+                <i class="fas fa-cog mr-1"></i> Paramètres Database
+            </button>
+        </div>
+        
+        <nav class="flex-1 px-3 space-y-2">
+            <button onclick="showPage('home')" id="nav-home" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Vision Annuelle</button>
+            <button onclick="showPage('step')" id="nav-step" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Objectifs Mois</button>
+            <button onclick="showPage('week')" id="nav-week" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Objectifs Semaine</button>
+            <button onclick="showPage('way')" id="nav-way" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800"> Calendrier</button>
+        </nav>
 
-        <!-- PROGRESS BAR NAVBAR -->
-        <div class="mt-auto p-6 border-t border-slate-800">
+        <div class="p-6 border-t border-slate-800">
             <div class="flex justify-between text-[10px] mb-2 uppercase font-bold text-slate-500">
-                <span>Efficacité Totale</span>
+                <span>Efficacité</span>
                 <span id="global-perc">0%</span>
             </div>
             <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
@@ -70,180 +64,221 @@
         </div>
     </aside>
 
-    <!-- MOBILE OVERLAY -->
     <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
 
-    <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-screen relative">
-        <!-- HEADER -->
         <header class="h-[70px] border-b border-slate-800 flex items-center justify-between px-6 bg-[#0b0f1a]/50 backdrop-blur z-30">
             <div class="flex items-center gap-4">
                 <button onclick="toggleMenu()" class="md:hidden text-xl text-slate-400"><i class="fas fa-bars"></i></button>
-                <h2 id="page-title" class="text-lg font-bold">Vision Annuelle</h2>
+                <h2 id="page-title" class="text-lg font-bold">Elite Strategy</h2>
             </div>
-            <!-- Month Selector for Calendar -->
             <div id="calendar-controls" class="hidden flex items-center gap-4">
-                <button onclick="changeMonth(-1)" class="p-2 hover:text-indigo-500"><i class="fas fa-chevron-left"></i></button>
-                <span id="current-month-display" class="text-sm font-bold w-28 text-center">Janvier</span>
-                <button onclick="changeMonth(1)" class="p-2 hover:text-indigo-500"><i class="fas fa-chevron-right"></i></button>
+                <button onclick="changeMonth(-1)" class="p-2 hover:text-indigo-500 transition"><i class="fas fa-chevron-left"></i></button>
+                <span id="current-month-display" class="text-sm font-bold w-28 text-center uppercase tracking-tighter">Janvier</span>
+                <button onclick="changeMonth(1)" class="p-2 hover:text-indigo-500 transition"><i class="fas fa-chevron-right"></i></button>
             </div>
         </header>
 
-        <!-- PAGE : HOME -->
+        <!-- PAGE : CONFIG (GIST) -->
+        <div id="page-config" class="page-content p-6 md:p-10 overflow-y-auto custom-scroll">
+            <div class="max-w-xl mx-auto glass p-8 rounded-3xl border border-indigo-500/20">
+                <h3 class="text-xl font-bold mb-2">Configuration Cloud</h3>
+                <p class="text-slate-500 text-xs mb-6 uppercase tracking-widest font-bold">Sécurisé par GitHub Gist</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-slate-400">Personal Access Token (ghp_...)</label>
+                        <input type="password" id="gh-token" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm mt-1 outline-none focus:ring-1 ring-indigo-500" placeholder="Ton secret token GitHub">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-slate-400">Gist ID</label>
+                        <input type="text" id="gh-gist" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm mt-1 outline-none focus:ring-1 ring-indigo-500" placeholder="ID de ton fichier Gist secret">
+                    </div>
+                    <button onclick="saveConfig()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-bold transition shadow-lg shadow-indigo-500/20 mt-4">
+                        ENREGISTRER & APPLIQUER
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUTRES PAGES (HOME, STEP, WEEK, WAY) - Contenu généré via JS -->
         <div id="page-home" class="page-content active p-6 md:p-10 overflow-y-auto custom-scroll">
-            <div class="max-w-4xl mx-auto space-y-10">
-                <div class="text-center">
-                    <h3 class="text-indigo-500 font-bold uppercase tracking-[0.3em] text-[10px] mb-4">Focus Majeur 2026</h3>
-                    <textarea id="year-vision" oninput="saveLocal()" class="w-full bg-transparent text-3xl md:text-5xl font-extrabold text-center outline-none resize-none placeholder:text-slate-900" placeholder="VOTRE MISSION ICI..."></textarea>
-                </div>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="glass p-8 rounded-3xl">
-                        <h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px] tracking-widest">Motivation & Pourquoi</h4>
-                        <textarea id="year-why" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed custom-scroll" placeholder="Inscrivez vos motivations..."></textarea>
-                    </div>
-                    <div class="glass p-8 rounded-3xl">
-                        <h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px] tracking-widest">Preuves de Réussite</h4>
-                        <textarea id="year-results" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed custom-scroll" placeholder="Quels seront les résultats concrets ?"></textarea>
-                    </div>
+            <div class="max-w-4xl mx-auto space-y-10 text-center">
+                <textarea id="year-vision" oninput="saveLocal()" class="w-full bg-transparent text-3xl md:text-5xl font-extrabold text-center outline-none resize-none placeholder:text-slate-900" placeholder="MISSION 2026..."></textarea>
+                <div class="grid md:grid-cols-2 gap-6 text-left">
+                    <div class="glass p-8 rounded-3xl"><h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px]">Motivation</h4><textarea id="year-why" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed"></textarea></div>
+                    <div class="glass p-8 rounded-3xl"><h4 class="font-bold mb-4 text-indigo-400 uppercase text-[10px]">Preuves</h4><textarea id="year-results" oninput="saveLocal()" class="w-full bg-transparent h-40 outline-none text-sm leading-relaxed"></textarea></div>
                 </div>
             </div>
         </div>
 
-        <!-- PAGE : STEP (MOIS) -->
-        <div id="page-step" class="page-content p-6 md:p-8 overflow-y-auto custom-scroll">
-            <div id="months-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <!-- Injecté par JS -->
+        <div id="page-step" class="page-content p-6 md:p-10 custom-scroll"><div id="months-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div></div>
+        <div id="page-week" class="page-content p-4 md:p-10 custom-scroll"><div id="weeks-list" class="max-w-4xl mx-auto flex flex-col gap-6"></div></div>
+        
+        <div id="page-way" class="page-content p-4 md:p-10 custom-scroll">
+            <div class="grid grid-cols-7 mb-4 text-center text-[10px] font-bold text-slate-500 uppercase">
+                <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
             </div>
-        </div>
-
-        <!-- PAGE : WAY (CALENDRIER) -->
-        <div id="page-way" class="page-content p-4 md:p-8 overflow-hidden flex flex-col xl:flex-row gap-6">
-            <div class="flex-1 overflow-x-auto custom-scroll">
-                <div class="min-w-[600px] mb-8">
-                    <div class="grid grid-cols-7 mb-4 text-center">
-                        <div class="text-[10px] font-bold text-slate-500 uppercase">Lun</div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase">Mar</div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase">Mer</div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase">Jeu</div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase">Ven</div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase">Sam</div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase">Dim</div>
-                    </div>
-                    <div id="calendar-grid" class="grid grid-cols-7 gap-2"></div>
-                </div>
-            </div>
-            
-            <!-- TASK ASIDE (DRAWER) -->
+            <div id="calendar-grid" class="grid grid-cols-7 gap-2 max-w-5xl mx-auto"></div>
             <aside id="day-detail" class="fixed inset-y-0 right-0 w-full md:w-96 glass md:rounded-l-3xl p-6 flex flex-col z-[60] translate-x-full transition-transform duration-300 hidden">
                 <div class="flex justify-between items-center mb-8">
-                    <div>
-                        <h3 id="selected-day-name" class="text-xl font-bold">Lundi</h3>
-                        <p id="selected-day-full" class="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter"></p>
-                    </div>
-                    <button onclick="closeDayDetail()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div><h3 id="selected-day-name" class="text-xl font-bold">Jour</h3><p id="selected-day-full" class="text-[10px] text-indigo-400 font-bold uppercase"></p></div>
+                    <button onclick="closeDayDetail()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center transition"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="flex gap-2 mb-6">
-                    <input type="time" id="task-time" class="bg-slate-800 border border-slate-700 rounded-xl px-2 py-3 text-xs outline-none focus:ring-2 ring-indigo-500">
-                    <input type="text" id="task-text" placeholder="Nouvelle tâche..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs outline-none focus:ring-2 ring-indigo-500">
-                    <button onclick="addTask()" class="bg-indigo-600 w-12 rounded-xl hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                    <input type="time" id="task-time" class="bg-slate-800 border border-slate-700 rounded-xl px-2 py-3 text-xs outline-none">
+                    <input type="text" id="task-text" placeholder="Nouvelle tâche..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs outline-none">
+                    <button onclick="addTask()" class="bg-indigo-600 w-12 rounded-xl"><i class="fas fa-plus"></i></button>
                 </div>
-                <div id="day-tasks" class="flex-1 space-y-3 overflow-y-auto custom-scroll pr-2"></div>
+                <div id="day-tasks" class="flex-1 space-y-3 overflow-y-auto custom-scroll"></div>
             </aside>
         </div>
     </main>
 
-    <!-- GOOGLE API CLIENTS -->
-    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
-
     <script>
-        // CONFIGURATION GOOGLE DRIVE
-        const API_KEY = 'AIzaSyCLCVxiUGf65S6HVE0DKWtiWgG4UgfSiJE';
-        const CLIENT_ID = '762678044357-g2p8fds4mch0qjr59fs90nuu3kjhhfm7.apps.googleusercontent.com';
-        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        // --- ÉTAT ---
+        let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || {};
+        let config = JSON.parse(localStorage.getItem('elite_cloud_config')) || { token: "", gistId: "" };
+        
+        function checkState() {
+            if (!state.vision) state.vision = { goal: "", why: "", results: "" };
+            if (!state.monthlyGoals) state.monthlyGoals = {};
+            if (!state.weeklyGoals) state.weeklyGoals = {};
+            if (!state.tasks) state.tasks = {};
+            localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+        }
+        checkState();
 
-        let tokenClient;
-        let gapiInited = false;
-        let gisInited = false;
-
+        let currentMonth = new Date().getMonth();
+        let selectedDateKey = null;
         const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
         const dayNamesFull = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
-        // ÉTAT DES DONNÉES
-        let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || {
-            vision: { goal: "", why: "", results: "" },
-            monthlyGoals: {},
-            tasks: {} // Format: "2026-01-01": [{id, time, text, done}]
-        };
-
-        let currentMonth = 0;
-        let selectedDateKey = null;
-
-        // UI & NAVIGATION
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('-translate-x-full');
-            document.getElementById('overlay').classList.toggle('hidden');
+        // --- GESTION GITHUB SYNC ---
+        function saveConfig() {
+            config.token = document.getElementById('gh-token').value;
+            config.gistId = document.getElementById('gh-gist').value;
+            localStorage.setItem('elite_cloud_config', JSON.stringify(config));
+            alert("Configuration enregistrée !");
+            showPage('home');
         }
 
+        async function syncWithGist() {
+            if (!config.token || !config.gistId) {
+                alert("Erreur: Token ou Gist ID manquant. Va dans Paramètres Database.");
+                showPage('config');
+                return;
+            }
+
+            const btnText = document.getElementById('sync-text');
+            btnText.innerText = "CONNEXION GITHUB...";
+
+            try {
+                // 1. TÉLÉCHARGEMENT (GET)
+                const resGet = await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                    headers: { 'Authorization': `token ${config.token}` }
+                });
+                
+                if (resGet.ok) {
+                    const data = await resGet.json();
+                    const cloudContent = JSON.parse(data.files['elite_data.json'].content);
+                    // On fusionne (Version Cloud prioritaire)
+                    state = cloudContent;
+                    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+                    refreshUI();
+                }
+
+                // 2. ENVOI (PATCH)
+                btnText.innerText = "Mise à jour Cloud...";
+                const resPatch = await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `token ${config.token}` },
+                    body: JSON.stringify({
+                        files: { 'elite_data.json': { content: JSON.stringify(state) } }
+                    })
+                });
+
+                if (resPatch.ok) {
+                    btnText.innerText = "CLOUD SYNCHRO ✓";
+                } else {
+                    throw new Error("Erreur Patch");
+                }
+            } catch (err) {
+                console.error(err);
+                btnText.innerText = "ERREUR GITHUB";
+            }
+            setTimeout(() => btnText.innerText = "SYNCHRONISER GITHUB", 3000);
+        }
+
+        // --- LOGIQUE APPLICATION ---
         function showPage(id) {
+            checkState();
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-link'));
-            document.getElementById('page-' + id).classList.add('active');
-            document.getElementById('nav-' + id).classList.add('active-link');
-            document.getElementById('page-title').innerText = document.getElementById('nav-' + id).innerText;
+            const p = document.getElementById('page-' + id);
+            if(p) p.classList.add('active');
+            const n = document.getElementById('nav-' + id);
+            if(n) n.classList.add('active-link');
             document.getElementById('calendar-controls').classList.toggle('hidden', id !== 'way');
-            if (window.innerWidth < 768 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleMenu();
             if (id === 'step') renderMonths();
+            if (id === 'week') renderWeeklyGoals();
             if (id === 'way') renderCalendar();
+            if (window.innerWidth < 768 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleMenu();
         }
 
-        // CALENDRIER RÉEL 2026
-        function renderCalendar() {
-            const container = document.getElementById('calendar-grid');
-            document.getElementById('current-month-display').innerText = monthNames[currentMonth];
+        function renderMonths() {
+            const grid = document.getElementById('months-grid');
+            grid.innerHTML = monthNames.map((name, i) => `
+                <div class="glass p-5 rounded-2xl border border-slate-800 transition hover:border-indigo-500/20">
+                    <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4">${name}</h3>
+                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" class="w-full bg-transparent h-24 outline-none text-sm resize-none placeholder:text-slate-800">${state.monthlyGoals[i] || ""}</textarea>
+                </div>`).join('');
+        }
+
+        function renderWeeklyGoals() {
+            const container = document.getElementById('weeks-list');
+            if(!container) return;
             container.innerHTML = "";
-
-            const firstDay = new Date(2026, currentMonth, 1).getDay();
-            // Le 1er Janvier 2026 est un Jeudi (JS Day 4). 
-            // On veut Lun=0, Mar=1... Dim=6. Donc Jeudi=3.
-            const offset = (firstDay === 0) ? 6 : firstDay - 1;
-            const daysInMonth = new Date(2026, currentMonth + 1, 0).getDate();
-
-            for(let i=0; i<offset; i++) container.innerHTML += `<div class="opacity-10"></div>`;
-
-            for(let d=1; d<=daysInMonth; d++) {
-                const key = `2026-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const dayTasks = state.tasks[key] || [];
-                const done = dayTasks.filter(t => t.done).length;
-                const total = dayTasks.length;
-
+            const year = 2026;
+            const lastDay = new Date(year, currentMonth + 1, 0).getDate();
+            let start = 1, week = 1;
+            while (start <= lastDay) {
+                let dateIter = new Date(year, currentMonth, start);
+                let untilSun = (dateIter.getDay() === 0) ? 0 : (7 - dateIter.getDay());
+                let end = start + untilSun;
+                if (end > lastDay) end = lastDay;
+                const key = `${year}-${currentMonth}-w${week}`;
                 container.innerHTML += `
-                    <div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 hover:border-indigo-500 cursor-pointer min-h-[75px] md:min-h-[100px] flex flex-col justify-between transition group">
-                        <span class="text-xs font-bold text-slate-500 group-hover:text-indigo-400">${d}</span>
-                        ${total > 0 ? `
-                            <div class="mt-2">
-                                <div class="text-[8px] font-bold text-slate-500 mb-1 uppercase">${done}/${total} Done</div>
-                                <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                                    <div class="bg-indigo-500 h-full transition-all" style="width: ${(done/total)*100}%"></div>
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
+                    <div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row gap-6 transition hover:border-indigo-500/30">
+                        <div class="md:w-44 border-l-2 border-indigo-500 pl-4 flex-shrink-0">
+                            <span class="text-[10px] font-black text-indigo-500 uppercase">Semaine 0${week}</span>
+                            <span class="text-[11px] font-bold text-slate-500 block tracking-tighter">Du ${start} au ${end} ${monthNames[currentMonth]}</span>
+                        </div>
+                        <textarea oninput="state.weeklyGoals['${key}'] = this.value; saveLocal()" class="flex-1 bg-slate-900/40 border border-white/5 rounded-2xl p-4 text-sm outline-none focus:ring-1 ring-indigo-500 h-24 resize-none transition">${state.weeklyGoals[key] || ""}</textarea>
+                    </div>`;
+                start = end + 1; week++;
+            }
+            document.getElementById('week-month-display').innerText = monthNames[currentMonth];
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            document.getElementById('current-month-display').innerText = monthNames[currentMonth];
+            grid.innerHTML = "";
+            const first = new Date(2026, currentMonth, 1).getDay();
+            const offset = (first === 0) ? 6 : first - 1;
+            for(let i=0; i<offset; i++) grid.innerHTML += `<div class="opacity-10"></div>`;
+            for(let d=1; d<=new Date(2026, currentMonth + 1, 0).getDate(); d++) {
+                const key = `2026-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const hasTasks = state.tasks[key] && state.tasks[key].length > 0;
+                const done = hasTasks ? state.tasks[key].filter(t => t.done).length : 0;
+                grid.innerHTML += `
+                    <div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 cursor-pointer min-h-[80px] flex flex-col justify-between transition hover:border-indigo-500">
+                        <span class="text-xs font-bold text-slate-500">${d}</span>
+                        ${hasTasks ? `<div class="h-1 bg-indigo-500 rounded-full" style="width:${(done/state.tasks[key].length)*100}%"></div>` : ''}
+                    </div>`;
             }
         }
 
-        function changeMonth(dir) {
-            currentMonth = (currentMonth + dir + 12) % 12;
-            renderCalendar();
-        }
-
-        // GESTION DES TACHES
         function openDay(key, d) {
             selectedDateKey = key;
             const dateObj = new Date(key);
@@ -260,152 +295,62 @@
         }
 
         function addTask() {
-            const time = document.getElementById('task-time').value || "--:--";
             const text = document.getElementById('task-text').value;
+            const time = document.getElementById('task-time').value || "--:--";
             if(!text) return;
             if(!state.tasks[selectedDateKey]) state.tasks[selectedDateKey] = [];
             state.tasks[selectedDateKey].push({ id: Date.now(), time, text, done: false });
             document.getElementById('task-text').value = "";
-            saveLocal();
-            renderTasks();
-        }
-
-        function toggleTask(id) {
-            const task = state.tasks[selectedDateKey].find(t => t.id === id);
-            task.done = !task.done;
-            saveLocal();
-            renderTasks();
-        }
-
-        function deleteTask(id) {
-            state.tasks[selectedDateKey] = state.tasks[selectedDateKey].filter(t => t.id !== id);
-            saveLocal();
-            renderTasks();
+            saveLocal(); renderTasks();
         }
 
         function renderTasks() {
             const list = document.getElementById('day-tasks');
             const tasks = state.tasks[selectedDateKey] || [];
             list.innerHTML = tasks.sort((a,b) => a.time.localeCompare(b.time)).map(t => `
-                <div class="flex items-center gap-4 p-4 bg-slate-900/50 rounded-2xl border border-slate-800 group hover:border-slate-700 transition">
-                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-5 h-5 rounded-lg accent-indigo-500 cursor-pointer">
-                    <div class="flex-1">
-                        <p class="text-[10px] font-bold text-indigo-500 mb-0.5">${t.time}</p>
-                        <p class="text-xs ${t.done ? 'line-through text-slate-500' : 'text-slate-200'}">${t.text}</p>
-                    </div>
-                    <button onclick="deleteTask(${t.id})" class="text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash-alt text-xs"></i></button>
-                </div>
-            `).join('');
-            if(!tasks.length) list.innerHTML = `<p class="text-center text-slate-600 text-xs italic py-10">Aucune tâche prévue</p>`;
+                <div class="flex items-center gap-4 p-4 bg-slate-900 rounded-xl border border-slate-800 mb-2">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-4 h-4 accent-indigo-500">
+                    <div class="flex-1 text-sm"><p class="text-[10px] text-indigo-400 font-bold">${t.time}</p><p class="${t.done ? 'line-through opacity-40 text-slate-500' : ''}">${t.text}</p></div>
+                    <button onclick="deleteTask(${t.id})"><i class="fas fa-trash text-xs opacity-20 hover:opacity-100 transition"></i></button>
+                </div>`).join('');
         }
 
-        // OBJECTIFS MENSUELS (STEPS)
-        function renderMonths() {
-            const grid = document.getElementById('months-grid');
-            grid.innerHTML = monthNames.map((name, i) => `
-                <div class="glass p-6 rounded-3xl border border-slate-800 group hover:border-indigo-500/50 transition">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">${name}</h3>
-                        <i class="fas fa-check-circle ${state.monthlyGoals[i] ? 'text-indigo-500' : 'text-slate-800'}"></i>
-                    </div>
-                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" 
-                        class="w-full bg-transparent h-28 outline-none text-sm placeholder:text-slate-800 resize-none custom-scroll"
-                        placeholder="Quel est l'objectif prioritaire ?">${state.monthlyGoals[i] || ""}</textarea>
-                </div>
-            `).join('');
-        }
+        function toggleTask(id) { const t = state.tasks[selectedDateKey].find(x => x.id === id); if(t) t.done = !t.done; saveLocal(); renderTasks(); }
+        function deleteTask(id) { state.tasks[selectedDateKey] = state.tasks[selectedDateKey].filter(x => x.id !== id); saveLocal(); renderTasks(); }
 
-        // PERSISTANCE & SYNC DRIVE
-        // Remplace ta fonction saveLocal par celle-ci
-function saveLocal() {
-    state.vision.goal = document.getElementById('year-vision').value;
-    state.vision.why = document.getElementById('year-why').value;
-    state.vision.results = document.getElementById('year-results').value;
-    
-    // Sauvegarde immédiate dans le navigateur
-    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-    updateProgress();
-    console.log("Sauvegarde locale effectuée");
-}
+        function saveLocal() {
+            checkState();
+            state.vision.goal = document.getElementById('year-vision').value;
+            state.vision.why = document.getElementById('year-why').value;
+            state.vision.results = document.getElementById('year-results').value;
+            localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+            updateProgress();
+        }
 
         function updateProgress() {
             let total = 0, done = 0;
-            Object.values(state.tasks).forEach(day => day.forEach(t => { total++; if(t.done) done++; }));
-            const perc = total === 0 ? 0 : Math.round((done/total)*100);
-            document.getElementById('global-bar').style.width = perc + '%';
-            document.getElementById('global-perc').innerText = perc + '%';
+            Object.values(state.tasks || {}).forEach(day => day.forEach(t => { total++; if(t.done) done++; }));
+            const p = total === 0 ? 0 : Math.round((done/total)*100);
+            document.getElementById('global-bar').style.width = p + '%';
+            document.getElementById('global-perc').innerText = p + '%';
         }
 
-        // GOOGLE DRIVE API ENGINE
-        function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] })); }
-        function gisLoaded() { 
-            tokenClient = google.accounts.oauth2.initTokenClient({ 
-                client_id: CLIENT_ID, 
-                scope: SCOPES, 
-                callback: (resp) => { if (resp.access_token) startDriveSync(); } 
-            }); 
-        }
-        
-        function handleAuthClick() { tokenClient.requestAccessToken(); }
-
-      async function startDriveSync() {
-    const syncBtnText = document.getElementById('sync-text');
-    syncBtnText.innerText = "Connexion...";
-
-    try {
-        // Force la sauvegarde locale avant d'envoyer
-        saveLocal();
-
-        // Chercher le fichier
-        const response = await gapi.client.drive.files.list({
-            q: "name = 'elite_planner_2026.json' and trashed = false",
-            fields: 'files(id, name)'
-        });
-        const files = response.result.files;
-        const fileContent = JSON.stringify(state);
-
-        if (files.length > 0) {
-            const fileId = files[0].id;
-            syncBtnText.innerText = "Sync en cours...";
-
-            // UPDATE
-            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${gapi.client.getToken().access_token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: fileContent
-            });
-            syncBtnText.innerText = "Cloud Synchro ✓";
-        } else {
-            // CREATE
-            syncBtnText.innerText = "Création Cloud...";
-            const metadata = { name: 'elite_planner_2026.json', mimeType: 'application/json' };
-            const file = new Blob([fileContent], { type: 'application/json' });
-            const formData = new FormData();
-            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-            formData.append('file', file);
-
-            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` },
-                body: formData
-            });
-            syncBtnText.innerText = "Cloud Créé ✓";
-        }
-    } catch (err) {
-        console.error("Erreur Drive:", err);
-        syncBtnText.innerText = "Erreur (Vérifie l'API)";
-    }
-}
-        window.onload = () => {
+        function refreshUI() {
+            checkState();
             document.getElementById('year-vision').value = state.vision.goal || "";
             document.getElementById('year-why').value = state.vision.why || "";
             document.getElementById('year-results').value = state.vision.results || "";
-            showPage('home');
+            document.getElementById('gh-token').value = config.token || "";
+            document.getElementById('gh-gist').value = config.gistId || "";
             updateProgress();
-        };
+            const activePage = document.querySelector('.page-content.active').id.replace('page-','');
+            showPage(activePage);
+        }
+
+        function changeMonth(dir) { currentMonth = (currentMonth + dir + 12) % 12; refreshUI(); }
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('overlay').classList.toggle('hidden'); }
+
+        window.onload = refreshUI;
     </script>
 </body>
 </html>
