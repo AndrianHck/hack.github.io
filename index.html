@@ -188,11 +188,12 @@
         </div>
     </main>
 
-   <!-- GOOGLE API CLIENTS -->
+    <!-- GOOGLE API CLIENTS -->
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
     <script>
+        // CONFIGURATION GOOGLE DRIVE
         const API_KEY = 'AIzaSyCLCVxiUGf65S6HVE0DKWtiWgG4UgfSiJE';
         const CLIENT_ID = '762678044357-g2p8fds4mch0qjr59fs90nuu3kjhhfm7.apps.googleusercontent.com';
         const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
@@ -205,14 +206,15 @@
         const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
         const dayNamesFull = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
-        // INITIALISATION ROBUSTE DU STATE
-        let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || {};
-        if (!state.vision) state.vision = { goal: "", why: "", results: "" };
-        if (!state.monthlyGoals) state.monthlyGoals = {};
-        if (!state.weeklyGoals) state.weeklyGoals = {};
-        if (!state.tasks) state.tasks = {};
+        // ÉTAT DES DONNÉES (Mis à jour)
+        let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || {
+            vision: { goal: "", why: "", results: "" },
+            monthlyGoals: {},
+            weeklyGoals: {}, // Nouveau : stockera {"2026-05-week1": "Mon objectif..."}
+            tasks: {}
+        };
 
-        let currentMonth = new Date().getMonth(); // Mois actuel par défaut
+        let currentMonth = 0;
         let selectedDateKey = null;
 
         // UI & NAVIGATION
@@ -221,52 +223,40 @@
             document.getElementById('overlay').classList.toggle('hidden');
         }
 
-        function showPage(id) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-link'));
-            
-            const targetPage = document.getElementById('page-' + id);
-            const targetNav = document.getElementById('nav-' + id);
-            
-            if(targetPage) targetPage.classList.add('active');
-            if(targetNav) targetNav.classList.add('active-link');
-            
-            const titles = { 'home': 'Vision Annuelle', 'step': 'Objectifs Mensuels', 'week': 'Objectifs Hebdomadaires', 'way': 'Calendrier' };
-            document.getElementById('page-title').innerText = titles[id] || "Elite Planner";
-
-            document.getElementById('calendar-controls').classList.toggle('hidden', id !== 'way');
-
-            if (id === 'step') renderMonths();
-            if (id === 'week') renderWeeklyGoals();
-            if (id === 'way') renderCalendar();
-        }
-
-        // RENDU HEBDOMADAIRE (LOGIQUE LUNDI-DIMANCHE)
+        // A mettre au tout début de ton script pour éviter les erreurs
+        if (!state.weeklyGoals) state.weeklyGoals = {};
+        
         function renderWeeklyGoals() {
             const container = document.getElementById('weeks-list');
             const monthLabel = document.getElementById('week-month-display');
             if (!container) return;
-
+        
             monthLabel.innerText = monthNames[currentMonth];
             container.innerHTML = ""; 
-
+        
             const year = 2026;
             const lastDayOfMonth = new Date(year, currentMonth + 1, 0).getDate();
             
             let currentStart = 1;
             let weekNum = 1;
-
+        
+            // ALGORITHME DE DÉCOUPAGE PAR SEMAINE (Lundi-Dimanche)
             while (currentStart <= lastDayOfMonth) {
                 let dateIter = new Date(year, currentMonth, currentStart);
-                let dayOfWeek = dateIter.getDay(); // 0: Dimanche, 1: Lundi
+                let dayOfWeek = dateIter.getDay(); // 0: Dimanche, 1: Lundi...
+                
+                // Calculer le prochain dimanche
+                // Si c'est un dimanche (0), on reste sur le jour même. 
+                // Sinon, on ajoute (7 - jour_actuel) jours.
                 let daysUntilSunday = (dayOfWeek === 0) ? 0 : (7 - dayOfWeek);
                 let currentEnd = currentStart + daysUntilSunday;
-
+        
+                // Ajustement pour ne pas dépasser la fin du mois
                 if (currentEnd > lastDayOfMonth) currentEnd = lastDayOfMonth;
-
+        
                 const weekKey = `${year}-${currentMonth}-w${weekNum}`;
-                const val = state.weeklyGoals[weekKey] || "";
-
+                const val = state.weeklyGoals ? (state.weeklyGoals[weekKey] || "") : "";
+        
                 container.innerHTML += `
                     <div class="glass p-6 rounded-2xl border border-slate-800 hover:border-indigo-500/40 transition-all group shadow-xl">
                         <div class="flex flex-col md:flex-row gap-6">
@@ -275,28 +265,58 @@
                                 <span class="text-[11px] font-bold text-slate-400">Du ${currentStart} au ${currentEnd} ${monthNames[currentMonth]}</span>
                             </div>
                             <div class="flex-1">
-                                <textarea oninput="saveWeeklyGoal('${weekKey}', this.value)" 
-                                    class="w-full bg-slate-900/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none h-24 placeholder:text-slate-800 transition">${val}</textarea>
+                                <textarea 
+                                    oninput="saveWeeklyGoal('${weekKey}', this.value)" 
+                                    class="w-full bg-slate-900/60 border border-white/5 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none h-24 placeholder:text-slate-800 transition"
+                                    placeholder="Objectifs stratégiques de la semaine...">${val}</textarea>
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                `;
+        
                 currentStart = currentEnd + 1;
                 weekNum++;
             }
         }
-
+        
         function saveWeeklyGoal(key, val) {
+            if (!state.weeklyGoals) state.weeklyGoals = {};
             state.weeklyGoals[key] = val;
             saveLocal();
         }
+        
+        function showPage(id) {
+        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-link'));
+        
+        const targetPage = document.getElementById('page-' + id);
+        const targetNav = document.getElementById('nav-' + id);
+        
+        if(targetPage) targetPage.classList.add('active');
+        if(targetNav) targetNav.classList.add('active-link');
+        
+        const titles = { 'home': 'Vision Annuelle', 'step': 'Objectifs Mensuels', 'week': 'Objectifs Hebdomadaires', 'way': 'Calendrier' };
+        document.getElementById('page-title').innerText = titles[id] || "Elite Planner";
+    
+        // Gestion du sélecteur de mois (Haut droite) : On l'affiche UNIQUEMENT sur le calendrier
+        const calControls = document.getElementById('calendar-controls');
+        if(calControls) calControls.classList.toggle('hidden', id !== 'way');
+    
+        // Déclenchement des rendus
+        if (id === 'step') renderMonths();
+        if (id === 'week') renderWeeklyGoals();
+        if (id === 'way') renderCalendar();
+        }
 
-        // CALENDRIER QUOTIDIEN
+        // CALENDRIER RÉEL 2026
         function renderCalendar() {
             const container = document.getElementById('calendar-grid');
             document.getElementById('current-month-display').innerText = monthNames[currentMonth];
             container.innerHTML = "";
 
             const firstDay = new Date(2026, currentMonth, 1).getDay();
+            // Le 1er Janvier 2026 est un Jeudi (JS Day 4). 
+            // On veut Lun=0, Mar=1... Dim=6. Donc Jeudi=3.
             const offset = (firstDay === 0) ? 6 : firstDay - 1;
             const daysInMonth = new Date(2026, currentMonth + 1, 0).getDate();
 
@@ -311,18 +331,25 @@
                 container.innerHTML += `
                     <div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 hover:border-indigo-500 cursor-pointer min-h-[75px] md:min-h-[100px] flex flex-col justify-between transition group">
                         <span class="text-xs font-bold text-slate-500 group-hover:text-indigo-400">${d}</span>
-                        ${total > 0 ? `<div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden"><div class="bg-indigo-500 h-full" style="width: ${(done/total)*100}%"></div></div>` : ''}
-                    </div>`;
+                        ${total > 0 ? `
+                            <div class="mt-2">
+                                <div class="text-[8px] font-bold text-slate-500 mb-1 uppercase">${done}/${total} Done</div>
+                                <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="bg-indigo-500 h-full transition-all" style="width: ${(done/total)*100}%"></div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
             }
         }
 
         function changeMonth(dir) {
             currentMonth = (currentMonth + dir + 12) % 12;
-            if (document.getElementById('page-way').classList.contains('active')) renderCalendar();
-            if (document.getElementById('page-week').classList.contains('active')) renderWeeklyGoals();
+            renderCalendar();
         }
 
-        // TACHES & SAUVEGARDE
+        // GESTION DES TACHES
         function openDay(key, d) {
             selectedDateKey = key;
             const dateObj = new Date(key);
@@ -339,8 +366,8 @@
         }
 
         function addTask() {
-            const text = document.getElementById('task-text').value;
             const time = document.getElementById('task-time').value || "--:--";
+            const text = document.getElementById('task-text').value;
             if(!text) return;
             if(!state.tasks[selectedDateKey]) state.tasks[selectedDateKey] = [];
             state.tasks[selectedDateKey].push({ id: Date.now(), time, text, done: false });
@@ -373,25 +400,39 @@
                         <p class="text-xs ${t.done ? 'line-through text-slate-500' : 'text-slate-200'}">${t.text}</p>
                     </div>
                     <button onclick="deleteTask(${t.id})" class="text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash-alt text-xs"></i></button>
-                </div>`).join('');
+                </div>
+            `).join('');
+            if(!tasks.length) list.innerHTML = `<p class="text-center text-slate-600 text-xs italic py-10">Aucune tâche prévue</p>`;
         }
 
+        // OBJECTIFS MENSUELS (STEPS)
         function renderMonths() {
             const grid = document.getElementById('months-grid');
             grid.innerHTML = monthNames.map((name, i) => `
                 <div class="glass p-6 rounded-3xl border border-slate-800 group hover:border-indigo-500/50 transition">
-                    <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4">${name}</h3>
-                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" class="w-full bg-transparent h-24 outline-none text-sm placeholder:text-slate-700 resize-none">${state.monthlyGoals[i] || ""}</textarea>
-                </div>`).join('');
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">${name}</h3>
+                        <i class="fas fa-check-circle ${state.monthlyGoals[i] ? 'text-indigo-500' : 'text-slate-800'}"></i>
+                    </div>
+                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" 
+                        class="w-full bg-transparent h-28 outline-none text-sm placeholder:text-slate-800 resize-none custom-scroll"
+                        placeholder="Quel est l'objectif prioritaire ?">${state.monthlyGoals[i] || ""}</textarea>
+                </div>
+            `).join('');
         }
 
-        function saveLocal() {
-            state.vision.goal = document.getElementById('year-vision').value;
-            state.vision.why = document.getElementById('year-why').value;
-            state.vision.results = document.getElementById('year-results').value;
-            localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-            updateProgress();
-        }
+        // PERSISTANCE & SYNC DRIVE
+        // Remplace ta fonction saveLocal par celle-ci
+function saveLocal() {
+    state.vision.goal = document.getElementById('year-vision').value;
+    state.vision.why = document.getElementById('year-why').value;
+    state.vision.results = document.getElementById('year-results').value;
+    
+    // Sauvegarde immédiate dans le navigateur
+    localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
+    updateProgress();
+    console.log("Sauvegarde locale effectuée");
+}
 
         function updateProgress() {
             let total = 0, done = 0;
@@ -401,100 +442,76 @@
             document.getElementById('global-perc').innerText = perc + '%';
         }
 
-        // --- GOOGLE DRIVE ENGINE (CORRIGÉ & SÉCURISÉ) ---
-        function gapiLoaded() {
-            gapi.load('client', async () => {
-                await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
-                gapiInited = true;
+        // GOOGLE DRIVE API ENGINE
+        function gapiLoaded() { gapi.load('client', () => gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] })); }
+        function gisLoaded() { 
+            tokenClient = google.accounts.oauth2.initTokenClient({ 
+                client_id: CLIENT_ID, 
+                scope: SCOPES, 
+                callback: (resp) => { if (resp.access_token) startDriveSync(); } 
+            }); 
+        }
+        
+        function handleAuthClick() { tokenClient.requestAccessToken(); }
+
+      async function startDriveSync() {
+    const syncBtnText = document.getElementById('sync-text');
+    syncBtnText.innerText = "Connexion...";
+
+    try {
+        // Force la sauvegarde locale avant d'envoyer
+        saveLocal();
+
+        // Chercher le fichier
+        const response = await gapi.client.drive.files.list({
+            q: "name = 'elite_planner_2026.json' and trashed = false",
+            fields: 'files(id, name)'
+        });
+        const files = response.result.files;
+        const fileContent = JSON.stringify(state);
+
+        if (files.length > 0) {
+            const fileId = files[0].id;
+            syncBtnText.innerText = "Sync en cours...";
+
+            // UPDATE
+            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${gapi.client.getToken().access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: fileContent
             });
-        }
+            syncBtnText.innerText = "Cloud Synchro ✓";
+        } else {
+            // CREATE
+            syncBtnText.innerText = "Création Cloud...";
+            const metadata = { name: 'elite_planner_2026.json', mimeType: 'application/json' };
+            const file = new Blob([fileContent], { type: 'application/json' });
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            formData.append('file', file);
 
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: (resp) => { if (resp.access_token) startDriveSync(); }
+            await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` },
+                body: formData
             });
-            gisInited = true;
+            syncBtnText.innerText = "Cloud Créé ✓";
         }
-
-        function handleAuthClick() {
-            if (!gapiInited || !gisInited) return alert("Chargement des services Google...");
-            tokenClient.requestAccessToken();
-        }
-
-        async function startDriveSync() {
-            const syncBtnText = document.getElementById('sync-text');
-            syncBtnText.innerText = "Sync...";
-
-            try {
-                // 1. Chercher le fichier
-                const response = await gapi.client.drive.files.list({
-                    q: "name = 'elite_planner_2026.json' and trashed = false",
-                    fields: 'files(id, name)'
-                });
-                const files = response.result.files;
-
-                if (files.length > 0) {
-                    const fileId = files[0].id;
-                    
-                    // 2. TÉLÉCHARGER (Download)
-                    const resDown = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                        headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }
-                    });
-                    
-                    if (resDown.ok) {
-                        const cloudData = await resDown.json();
-                        state = cloudData; // On adopte la version Cloud
-                        localStorage.setItem('elite_2026_vFinal', JSON.stringify(state));
-                        refreshUI();
-                    }
-
-                    // 3. SAUVEGARDER (Upload)
-                    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${gapi.client.getToken().access_token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(state)
-                    });
-                    syncBtnText.innerText = "Synchro ✓";
-                } else {
-                    // CRÉATION INITIALE
-                    const metadata = { name: 'elite_planner_2026.json', mimeType: 'application/json' };
-                    const file = new Blob([JSON.stringify(state)], { type: 'application/json' });
-                    const formData = new FormData();
-                    formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                    formData.append('file', file);
-
-                    await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${gapi.client.getToken().access_token}` },
-                        body: formData
-                    });
-                    syncBtnText.innerText = "Backup Créé ✓";
-                }
-            } catch (err) {
-                console.error(err);
-                syncBtnText.innerText = "Erreur API";
-            }
-            setTimeout(() => syncBtnText.innerText = "SYNCHRONISER DRIVE", 3000);
-        }
-
-        function refreshUI() {
+    } catch (err) {
+        console.error("Erreur Drive:", err);
+        syncBtnText.innerText = "Erreur (Vérifie l'API)";
+    }
+}
+        window.onload = () => {
             document.getElementById('year-vision').value = state.vision.goal || "";
             document.getElementById('year-why').value = state.vision.why || "";
             document.getElementById('year-results').value = state.vision.results || "";
-            updateProgress();
-            // Rafraîchir la page active
-            const activePage = document.querySelector('.page-content.active').id;
-            showPage(activePage.replace('page-', ''));
-        }
-
-        window.onload = () => {
-            refreshUI();
             showPage('home');
+            updateProgress();
         };
     </script>
+</body>
 </html>
