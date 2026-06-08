@@ -30,7 +30,7 @@
                 </div>
                 <div class="flex flex-col uppercase font-bold tracking-widest text-center">
                     <span class="text-sm">Elite</span>
-                    <span class="text-[8px] text-slate-500 -mt-1">Strategy 2026</span>
+                    <span class="text-[8px] text-slate-500 -mt-1 text-center">Strategy 2026</span>
                 </div>
             </div>
 
@@ -120,8 +120,9 @@
                         <p id="selected-day-full" class="text-[10px] text-indigo-400 font-bold uppercase"></p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="copyDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]" title="Copier ID Liste"><i class="fas fa-copy"></i></button>
-                        <button onclick="pasteDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]" title="Coller ID Liste"><i class="fas fa-paste"></i></button>
+                        <button onclick="pasteSingleTask()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-emerald-500 transition text-[10px]" title="Coller une tâche"><i class="fas fa-file-import"></i></button>
+                        <button onclick="copyDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]" title="Copier la journée"><i class="fas fa-copy"></i></button>
+                        <button onclick="pasteDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]" title="Coller la journée"><i class="fas fa-paste"></i></button>
                         <button onclick="closeDayDetail()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-red-500 transition"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
@@ -156,9 +157,9 @@
 
         let state = { vision: {}, monthlyGoals: {}, weeklyGoals: {}, tasks: {} };
         let config = JSON.parse(localStorage.getItem('elite_cloud_config')) || { token: "", gistId: "" };
-        let currentMonth = new Date().getMonth();
+        let currentMonth = 5; 
         let selectedDateKey = null;
-        let editingTaskId = null; // Stocke l'ID de la tâche en cours d'édition
+        let editingTaskId = null;
 
         function checkState() {
             if (!state.vision) state.vision = { goal: "", why: "", results: "" };
@@ -228,54 +229,22 @@
             if (window.innerWidth < 768 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleMenu();
         }
 
-        // --- GESTION DES TACHES (CORRIGÉE AVEC EDITION) ---
         function addTask() {
             const text = document.getElementById('task-text').value;
             const start = document.getElementById('task-time-start').value || "00:00";
             const end = document.getElementById('task-time-end').value || "--:--";
-            
             if(!text) return;
             if(!state.tasks[selectedDateKey]) state.tasks[selectedDateKey] = [];
-
             if (editingTaskId !== null) {
-                // Mode Edition
-                const taskIndex = state.tasks[selectedDateKey].findIndex(t => t.id === editingTaskId);
-                if (taskIndex !== -1) {
-                    state.tasks[selectedDateKey][taskIndex].start = start;
-                    state.tasks[selectedDateKey][taskIndex].end = end;
-                    state.tasks[selectedDateKey][taskIndex].text = text;
-                }
+                const idx = state.tasks[selectedDateKey].findIndex(t => t.id === editingTaskId);
+                if (idx !== -1) { state.tasks[selectedDateKey][idx] = { ...state.tasks[selectedDateKey][idx], start, end, text }; }
                 editingTaskId = null;
                 document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-plus"></i>';
-                document.getElementById('add-task-btn').className = "bg-indigo-600 px-6 rounded-xl font-bold hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20";
             } else {
-                // Mode Ajout
                 state.tasks[selectedDateKey].push({ id: Date.now(), start, end, text, done: false });
             }
-
             document.getElementById('task-text').value = "";
-            document.getElementById('task-time-start').value = "";
-            document.getElementById('task-time-end').value = "";
-            renderTasks();
-            updateProgress();
-        }
-
-        function editTask(id) {
-            const task = state.tasks[selectedDateKey].find(t => t.id === id);
-            if (!task) return;
-
-            // Charger les données dans les inputs
-            document.getElementById('task-text').value = task.text;
-            document.getElementById('task-time-start').value = task.start;
-            document.getElementById('task-time-end').value = task.end;
-
-            // Changer l'état du bouton
-            editingTaskId = id;
-            document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-check"></i>';
-            document.getElementById('add-task-btn').className = "bg-emerald-600 px-6 rounded-xl font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-500/20";
-            
-            // Focus sur le texte
-            document.getElementById('task-text').focus();
+            renderTasks(); updateProgress();
         }
 
         function renderTasks() {
@@ -286,11 +255,12 @@
                     <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-4 h-4 accent-indigo-500 cursor-pointer">
                     <div class="flex-1 text-sm">
                         <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">${t.start} — ${t.end}</p>
-                        <p class="${t.done ? 'line-through opacity-40 text-slate-500' : ''}">${t.text}</p>
+                        <p class="${t.done ? 'line-through opacity-40' : ''}">${t.text}</p>
                     </div>
                     <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                        <button onclick="editTask(${t.id})" class="text-slate-500 hover:text-indigo-400 transition" title="Modifier"><i class="fas fa-pen-alt text-xs"></i></button>
-                        <button onclick="deleteTask(${t.id})" class="text-slate-500 hover:text-red-500 transition" title="Supprimer"><i class="fas fa-trash-alt text-xs"></i></button>
+                        <button onclick="copySingleTask(${t.id})" title="Copier ID Tâche"><i class="fas fa-clone text-xs text-slate-500 hover:text-indigo-400"></i></button>
+                        <button onclick="editTask(${t.id})" title="Modifier"><i class="fas fa-pen-alt text-xs text-slate-500 hover:text-indigo-400"></i></button>
+                        <button onclick="deleteTask(${t.id})" title="Supprimer"><i class="fas fa-trash-alt text-xs text-slate-500 hover:text-red-500"></i></button>
                     </div>
                 </div>`).join('');
             if(!tasks.length) list.innerHTML = `<p class="text-center text-slate-600 text-xs italic py-10 uppercase font-bold tracking-widest">Aucune tâche</p>`;
@@ -302,25 +272,49 @@
             if (editingTaskId === id) {
                 editingTaskId = null;
                 document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-plus"></i>';
-                document.getElementById('add-task-btn').className = "bg-indigo-600 px-6 rounded-xl font-bold hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20";
                 document.getElementById('task-text').value = "";
             }
             renderTasks(); updateProgress(); 
         }
+        
+        function editTask(id) {
+            const t = state.tasks[selectedDateKey].find(x => x.id === id);
+            document.getElementById('task-text').value = t.text;
+            document.getElementById('task-time-start').value = t.start;
+            document.getElementById('task-time-end').value = t.end;
+            editingTaskId = id;
+            document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-check"></i>';
+        }
+
+        function copySingleTask(id) {
+            const t = state.tasks[selectedDateKey].find(x => x.id === id);
+            const identifier = btoa(unescape(encodeURIComponent(JSON.stringify(t))));
+            navigator.clipboard.writeText(identifier).then(() => alert("ID Tâche Copié !"));
+        }
+
+        function pasteSingleTask() {
+            const id = prompt("Collez l'ID de la tâche :");
+            if (!id) return;
+            try {
+                const t = JSON.parse(decodeURIComponent(escape(atob(id))));
+                if(!state.tasks[selectedDateKey]) state.tasks[selectedDateKey] = [];
+                state.tasks[selectedDateKey].push({ ...t, id: Date.now(), done: false });
+                renderTasks(); updateProgress(); renderCalendar();
+            } catch(e) { alert("ID invalide."); }
+        }
 
         function copyDayID() {
             const tasks = state.tasks[selectedDateKey] || [];
-            if (!tasks.length) return alert("Pas de tâches à copier.");
             const identifier = btoa(unescape(encodeURIComponent(JSON.stringify(tasks))));
-            navigator.clipboard.writeText(identifier).then(() => alert("ID Unique Copié !"));
+            navigator.clipboard.writeText(identifier).then(() => alert("ID Journée Copié !"));
         }
 
         function pasteDayID() {
-            const identifier = prompt("Collez l'ID unique ici :");
-            if (!identifier) return;
+            const id = prompt("Collez l'ID de la journée :");
+            if (!id) return;
             try {
-                const pastedTasks = JSON.parse(decodeURIComponent(escape(atob(identifier))));
-                state.tasks[selectedDateKey] = pastedTasks.map(t => ({ ...t, id: Date.now() + Math.random(), done: false }));
+                const tasks = JSON.parse(decodeURIComponent(escape(atob(id))));
+                state.tasks[selectedDateKey] = tasks.map(t => ({ ...t, id: Date.now() + Math.random(), done: false }));
                 renderTasks(); updateProgress(); renderCalendar();
             } catch (e) { alert("ID invalide."); }
         }
@@ -393,11 +387,9 @@
         function openDay(key, d) {
             editingTaskId = null;
             document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-plus"></i>';
-            document.getElementById('add-task-btn').className = "bg-indigo-600 px-6 rounded-xl font-bold hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/20";
             document.getElementById('task-text').value = "";
             document.getElementById('task-time-start').value = "";
             document.getElementById('task-time-end').value = "";
-            
             selectedDateKey = key;
             const dateObj = new Date(key);
             document.getElementById('selected-day-name').innerText = dayNamesFull[dateObj.getDay() === 0 ? 6 : dateObj.getDay()-1];
@@ -407,17 +399,24 @@
             renderTasks();
         }
 
-        function closeDayDetail() {
-            document.getElementById('day-detail').classList.add('translate-x-full');
-            setTimeout(() => { document.getElementById('day-detail').classList.add('hidden'); renderCalendar(); }, 300);
-        }
+        function closeDayDetail() { document.getElementById('day-detail').classList.add('translate-x-full'); setTimeout(() => { document.getElementById('day-detail').classList.add('hidden'); renderCalendar(); }, 300); }
 
         function updateProgress() {
             let total = 0, done = 0;
-            Object.values(state.tasks || {}).forEach(day => day.forEach(t => { total++; if(t.done) done++; }));
-            const p = total === 0 ? 0 : Math.round((done/total)*100);
-            document.getElementById('global-bar').style.width = p + '%';
-            document.getElementById('global-perc').innerText = p + '%';
+            const allDays = Object.values(state.tasks || {});
+            allDays.forEach(dayTasks => {
+                if (Array.isArray(dayTasks)) {
+                    dayTasks.forEach(t => {
+                        total++;
+                        if (t.done) done++;
+                    });
+                }
+            });
+            const p = total === 0 ? 0 : Math.round((done / total) * 100);
+            const bar = document.getElementById('global-bar');
+            const percText = document.getElementById('global-perc');
+            if (bar) bar.style.width = p + '%';
+            if (percText) percText.innerText = p + '%';
         }
 
         function refreshUI() {
