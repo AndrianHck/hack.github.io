@@ -227,7 +227,7 @@
             grid.innerHTML = monthNames.map((name, i) => `
                 <div class="glass p-5 rounded-3xl border border-slate-800">
                     <h3 class="text-[10px] font-bold text-indigo-500 uppercase mb-3">${name}</h3>
-                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" class="w-full bg-transparent h-24 outline-none text-sm resize-none">${state.monthlyGoals[i] || ""}</textarea>
+                    <textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocal()" class="w-full bg-transparent h-24 custom-scroll outline-none text-sm resize-none">${state.monthlyGoals[i] || ""}</textarea>
                 </div>`).join('');
         }
 
@@ -249,7 +249,7 @@
                             <span class="text-[10px] font-black text-indigo-500 uppercase">Semaine 0${week}</span>
                             <span class="text-[11px] font-bold text-slate-500 block tracking-tighter">Du ${start} au ${end}</span>
                         </div>
-                        <textarea oninput="state.weeklyGoals['${key}'] = this.value; saveLocal()" class="flex-1 bg-slate-900/40 border border-white/5 rounded-2xl p-4 text-sm outline-none focus:ring-1 ring-indigo-500 h-24 resize-none transition">${state.weeklyGoals[key] || ""}</textarea>
+                        <textarea oninput="state.weeklyGoals['${key}'] = this.value; saveLocal()" class="flex-1 bg-slate-900/40 border custom-scroll border-white/5 rounded-2xl p-4 text-sm outline-none focus:ring-1 ring-indigo-500 h-24 resize-none transition">${state.weeklyGoals[key] || ""}</textarea>
                     </div>`;
                 start = end + 1; week++;
             }
