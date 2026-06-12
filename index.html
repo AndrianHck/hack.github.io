@@ -27,6 +27,18 @@
     </style>
 </head>
 <body class="min-h-screen">
+        <!-- SPLASH SCREEN DE CHARGEMENT -->
+    <div id="splash-screen" class="fixed inset-0 z-[300] bg-[#0b0f1a] flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="relative w-20 h-20 mb-6">
+            <!-- Anneau de chargement tournant -->
+            <div class="absolute inset-0 border-4 border-indigo-500/10 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div class="flex flex-col items-center">
+            <p class="text-indigo-400 font-black uppercase tracking-[0.4em] text-[10px] animate-pulse">Initialisation Elite</p>
+            <p id="splash-step" class="text-slate-600 text-[8px] uppercase mt-2 tracking-widest">Chargement des modules...</p>
+        </div>
+    </div>
 
     <!-- PAGE DE CONNEXION (LOCK) -->
     <div id="login-screen" class="fixed inset-0 z-[200] bg-[#0b0f1a] flex items-center justify-center p-4">
@@ -231,24 +243,35 @@
         };
 
         function injectIcons() {
-        document.querySelectorAll('i').forEach(iconTag => {
-            const classList = Array.from(iconTag.classList);
-            // On cherche une clé qui commence par fa- dans notre dictionnaire
-            const iconKey = classList.find(c => SVG_ICONS[c]);
-            if (iconKey) {
-                const svgString = SVG_ICONS[iconKey];
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = svgString;
-                const svgElement = tempDiv.firstChild;
+        return new Promise((resolve) => {
+            const icons = document.querySelectorAll('i');
+            let processed = 0;
+
+            if (icons.length === 0) resolve();
+
+            icons.forEach(iconTag => {
+                const classList = Array.from(iconTag.classList);
+                const iconKey = classList.find(c => SVG_ICONS[c]);
                 
-                // On copie les classes de couleur de l'original (ex: text-white, text-indigo-400)
-                classList.forEach(c => {
-                    if (c.startsWith('text-')) svgElement.classList.add(c);
-                });
-                
-                iconTag.replaceWith(svgElement);
+                if (iconKey) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = SVG_ICONS[iconKey];
+                    const svgElement = tempDiv.firstChild;
+                    
+                    // Transfert des couleurs
+                    classList.forEach(c => {
+                        if (c.startsWith('text-')) svgElement.classList.add(c);
+                    });
+                    
+                    iconTag.replaceWith(svgElement);
                 }
+                processed++;
+                if (processed === icons.length) resolve();
             });
+            
+            // Si après traitement il reste des <i> non gérés, on résout quand même
+            resolve();
+        });
         }
 
         const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -508,7 +531,49 @@
         function openDay(key, d) { editingTaskId = null; document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-plus"></i>'; injectIcons(); document.getElementById('task-text').value = ""; document.getElementById('task-time-start').value = ""; document.getElementById('task-time-end').value = ""; document.getElementById('task-pin').value = ""; selectedDateKey = key; const dateObj = new Date(key); document.getElementById('selected-day-name').innerText = dayNamesFull[dateObj.getDay() === 0 ? 6 : dateObj.getDay()-1]; document.getElementById('selected-day-full').innerText = `${d} ${monthNames[currentMonth]} 2026`; document.getElementById('day-detail').classList.remove('hidden'); setTimeout(() => document.getElementById('day-detail').classList.remove('translate-x-full'), 10); renderTasks(); }
         function closeDayDetail() { document.getElementById('day-detail').classList.add('translate-x-full'); setTimeout(() => { document.getElementById('day-detail').classList.add('hidden'); renderCalendar(); }, 300); }
         function updateProgress() { let total = 0, done = 0; Object.values(state.tasks || {}).forEach(dayTasks => { if (Array.isArray(dayTasks)) { dayTasks.forEach(t => { total++; if (t.done) done++; }); } }); const p = total === 0 ? 0 : Math.round((done / total) * 100); const bar = document.getElementById('global-bar'); const percText = document.getElementById('global-perc'); if (bar) bar.style.width = p + '%'; if (percText) percText.innerText = p + '%'; }
-        function refreshUI() { checkState(); document.getElementById('year-vision').value = state.vision.goal || ""; document.getElementById('year-why').value = state.vision.why || ""; document.getElementById('year-results').value = state.vision.results || ""; document.getElementById('gh-token').value = config.token || ""; document.getElementById('gh-gist').value = config.gistId || ""; updateProgress(); renderCalendar(); renderWeeklyGoals(); updateOnlineStatus(); injectIcons();}
+        async function refreshUI() {
+        const splashStep = document.getElementById('splash-step');
+        try {
+            checkState();
+            if(splashStep) splashStep.innerText = "Synchronisation des données...";
+            
+            // Remplissage des champs
+            const fields = {
+                'year-vision': state.vision.goal,
+                'year-why': state.vision.why,
+                'year-results': state.vision.results,
+                'gh-token': config.token,
+                'gh-gist': config.gistId
+            };
+
+            for (const [id, val] of Object.entries(fields)) {
+                const el = document.getElementById(id);
+                if (el) el.value = val || "";
+            }
+            
+            updateProgress();
+            renderCalendar();
+            renderWeeklyGoals();
+            updateOnlineStatus();
+
+            if(splashStep) splashStep.innerText = "Injection des icônes SVG...";
+            
+            // On attend la fin de l'injection
+            await injectIcons();
+
+        } catch (e) {
+            console.error("Erreur durant le refresh:", e);
+        } finally {
+            // QUOI QU'IL ARRIVE, on retire le splash screen après un court délai
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.remove(), 700);
+                }
+            }, 800);
+        }
+    }
         function changeMonth(dir) { currentMonth = (currentMonth + dir + 12) % 12; renderCalendar(); renderWeeklyGoals(); injectIcons();}
         function toggleMenu() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('overlay').classList.toggle('hidden'); }
         function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
@@ -517,7 +582,19 @@
         document.getElementById('main-pin-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') verifyMainPin(); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && document.body.classList.contains('unlocked')) { const panel = document.getElementById('day-detail'); if (panel && !panel.classList.contains('hidden') && document.activeElement.id !== 'day-comment' && document.activeElement.id !== 'main-pin-input') { validateTaskPin(); } } });
 
-        window.onload = () => { updateOnlineStatus(); };
+        window.onload = () => {
+    // On lance le processus de rendu qui va lui-même fermer le splash
+    refreshUI();
+    
+    // On force l'affichage de la home
+    showPage('home');
+
+    // Sécurité ultime : si le splash est encore là après 5s (erreur critique), on le vire
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if(splash) splash.remove();
+    }, 5000);
+};
     </script>
 </body>
 </html>
