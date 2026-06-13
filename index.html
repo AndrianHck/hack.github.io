@@ -62,9 +62,9 @@
     </div>
 
     <!-- APPLICATION PRINCIPALE -->
-    <div id="main-app" class="h-screen w-full flex flex-col md:flex-row">
+    <div id="main-app" class="h-screen w-full flex">
         <!-- SIDEBAR -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-slate-800 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 flex flex-col overflow-y-auto custom-scroll">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 md:w-64 relative w-32 bg-[#0f172a] border-r border-slate-800 transform transition-transform duration-300 flex flex-col overflow-y-auto custom-scroll">
             <div class="p-6">
                 <div class="flex items-center gap-4 mb-6 px-2">
                     <div class="font-black text-2xl text-white">E<span class="text-indigo-500">.</span></div>
@@ -100,7 +100,7 @@
                 </div>
                 
                 <nav class="space-y-1">
-                    <button onclick="showPage('home')" id="nav-home" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3 font-bold uppercase text-[11px] tracking-wider">Vision Annuelle</button>
+                    <button  id="nav-home" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3 font-bold uppercase text-[11px] tracking-wider">Vision Annuelle</button>
                     <button onclick="showPage('step')" id="nav-step" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3 font-bold uppercase text-[11px] tracking-wider">Objectifs Mois</button>
                     <button onclick="showPage('week')" id="nav-week" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3 font-bold uppercase text-[11px] tracking-wider">Objectifs Semaine</button>
                     <button onclick="showPage('way')" id="nav-way" class="w-full text-left px-4 py-3 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-3 font-bold uppercase text-[11px] tracking-wider">Calendrier</button>
@@ -120,8 +120,7 @@
 
         <main class="flex-1 flex flex-col h-screen relative overflow-hidden">
             <header class="h-[70px] border-b border-slate-800 flex items-center justify-between px-6 bg-[#0b0f1a]/50 backdrop-blur z-30">
-                <button onclick="toggleMenu()" class="md:hidden text-xl text-slate-400"><i class="fas fa-bars"></i></button>
-                <h2 id="page-title" class="text-lg font-bold uppercase tracking-widest text-indigo-400 font-black italic">Vision Annuelle</h2>
+                <button id="page-title" class="text-lg font-bold uppercase tracking-widest text-indigo-400 font-black italic">Vision Annuelle</button>
                 <div id="calendar-controls" class="hidden flex items-center gap-4">
                     <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
                     <span id="current-month-display" class="text-sm font-bold w-24 text-center text-white">Juin</span>
@@ -218,6 +217,13 @@
     </div>
 
     <script>
+        const nav_btn = document.getElementById("page-title");
+        const aside = document.getElementById("sidebar");
+
+        nav_btn.addEventListener("click", function() {
+            // toggle ajoute la classe si elle est absente, ou l'enlève si elle est présente
+            aside.classList.toggle("hidden");
+        });
         // --- BIBLIOTHÈQUE D'ICÔNES SVG (COMPILÉE) ---
         const SVG_ICONS = {
         'fa-check': '<svg class="w-4 h-4 inline-block align-middle" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>',
