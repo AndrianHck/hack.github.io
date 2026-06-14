@@ -119,8 +119,8 @@
         <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
 
         <main class="flex-1 flex flex-col h-screen relative overflow-hidden">
-            <header class="h-[70px] border-b border-slate-800 flex items-center justify-between px-6 bg-[#0b0f1a]/50 backdrop-blur z-30">
-                <button id="page-title" class="text-lg font-bold uppercase tracking-widest text-indigo-400 font-black italic">Vision Annuelle</button>
+            <header class="h-[70px] border-b flex border-slate-800 flex items-center justify-between px-6 bg-[#0b0f1a]/50 backdrop-blur z-30">
+                <button id="page-title" class="text-lg ml-auto font-bold uppercase tracking-widest text-indigo-400 font-black italic">Vision Annuelle</button>
                 <div id="calendar-controls" class="hidden flex items-center gap-4">
                     <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
                     <span id="current-month-display" class="text-sm font-bold w-24 text-center text-white">Juin</span>
@@ -291,11 +291,12 @@
         let editingTaskId = null;
 
         function checkState() {
-            if (!state.vision) state.vision = { goal: "", why: "", results: "" };
-            if (!state.monthlyGoals) state.monthlyGoals = {};
-            if (!state.weeklyGoals) state.weeklyGoals = {};
-            if (!state.tasks) state.tasks = {};
-            if (!state.dayComments) state.dayComments = {};
+        if (!state.vision) state.vision = { goal: "", why: "", results: "" };
+        if (!state.monthlyGoals) state.monthlyGoals = {};
+        if (!state.weeklyGoals) state.weeklyGoals = {};
+        if (!state.weeklyComments) state.weeklyComments = {}; // Ajoutez cette ligne
+        if (!state.tasks) state.tasks = {};
+        if (!state.dayComments) state.dayComments = {};
         }
 
         // --- LOGIN LOGIC ---
@@ -382,13 +383,15 @@
                     const cloudData = JSON.parse(cloud.files['elite_data.json'].content);
                     
                     // FUSION : On mélange Cloud et Local. Le Local a priorité sur les conflits.
-                    finalData = {
-                        vision: { ...cloudData.vision, ...state.vision },
-                        monthlyGoals: { ...cloudData.monthlyGoals, ...state.monthlyGoals },
-                        weeklyGoals: { ...cloudData.weeklyGoals, ...state.weeklyGoals },
-                        tasks: { ...cloudData.tasks, ...state.tasks },
-                        dayComments: { ...cloudData.dayComments, ...state.dayComments }
-                    };
+                    // À l'intérieur de uploadToGitHub, modifiez l'objet finalData :
+                finalData = { 
+                    vision: { ...cloudData.vision, ...state.vision }, 
+                    monthlyGoals: { ...cloudData.monthlyGoals, ...state.monthlyGoals }, 
+                    weeklyGoals: { ...cloudData.weeklyGoals, ...state.weeklyGoals }, 
+                    weeklyComments: { ...cloudData.weeklyComments, ...state.weeklyComments }, // Ajoutez cette ligne
+                    tasks: { ...cloudData.tasks, ...state.tasks }, 
+                    dayComments: { ...cloudData.dayComments, ...state.dayComments } 
+                };
                 }
 
                 // B. On envoie la version fusionnée (Update)
@@ -531,7 +534,47 @@
         function pasteDayID() { const id = prompt("ID journée :"); if (!id) return; try { const tasks = JSON.parse(decodeURIComponent(escape(atob(id)))); state.tasks[selectedDateKey] = tasks.map(t => ({ ...t, id: Date.now() + Math.random(), done: false })); renderTasks(); updateProgress(); saveLocalInternally(); } catch (e) { alert("ID invalide."); } }
 
         function renderMonths() { const grid = document.getElementById('months-grid'); grid.innerHTML = monthNames.map((name, i) => `<div class="glass p-5 rounded-3xl border border-slate-800 text-left"><h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 italic">${name}</h3><textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocalInternally()" class="w-full bg-transparent h-24 outline-none text-sm resize-none custom-scroll placeholder:text-slate-800">${state.monthlyGoals[i] || ""}</textarea></div>`).join(''); }
-        function renderWeeklyGoals() { const container = document.getElementById('weeks-list'); if(!container) return; container.innerHTML = ""; const year = 2026; const lastDay = new Date(year, currentMonth + 1, 0).getDate(); let start = 1, week = 1; while (start <= lastDay) { let d = new Date(year, currentMonth, start); let end = start + (d.getDay() === 0 ? 0 : 7 - d.getDay()); if (end > lastDay) end = lastDay; const key = `2026-${currentMonth}-w${week}`; container.innerHTML += `<div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row gap-6 transition hover:border-indigo-500/20 text-left shadow-lg"><div class="md:w-44 border-l-2 border-indigo-500 pl-4 flex-shrink-0"><span class="text-[10px] font-black text-indigo-500 uppercase italic">Semaine 0${week}</span><span class="text-[11px] font-bold text-slate-500 block tracking-tight">Du ${start} au ${end}</span></div><textarea oninput="state.weeklyGoals['${key}'] = this.value; saveLocalInternally()" class="flex-1 bg-slate-900/40 border border-white/5 rounded-2xl p-4 text-sm h-24 resize-none outline-none focus:ring-1 ring-indigo-500 transition custom-scroll">${state.weeklyGoals[key] || ""}</textarea></div>`; start = end + 1; week++; } document.getElementById('week-month-display').innerText = monthNames[currentMonth]; }
+        function renderWeeklyGoals() {
+        const container = document.getElementById('weeks-list');
+        if(!container) return; 
+        container.innerHTML = "";
+        const year = 2026;
+        const lastDay = new Date(year, currentMonth + 1, 0).getDate();
+        let start = 1, week = 1;
+        
+        while (start <= lastDay) {
+            let d = new Date(year, currentMonth, start);
+            let end = start + (d.getDay() === 0 ? 0 : 7 - d.getDay());
+            if (end > lastDay) end = lastDay;
+            const key = `${year}-${currentMonth}-w${week}`;
+            
+            const goalVal = state.weeklyGoals[key] || "";
+            const commentVal = state.weeklyComments[key] || ""; // Récupère le commentaire
+
+            container.innerHTML += `
+                <div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row gap-6 transition hover:border-indigo-500/20 text-left shadow-lg">
+                    <div class="md:w-44 border-l-2 border-indigo-500 pl-4 flex-shrink-0 text-white">
+                        <span class="text-[10px] font-black uppercase italic">Semaine 0${week}</span>
+                        <span class="text-[11px] font-bold text-slate-500 block tracking-tight">Du ${start} au ${end} ${monthNames[currentMonth]}</span>
+                    </div>
+                    <div class="flex-1 space-y-4">
+                        <textarea oninput="state.weeklyGoals['${key}'] = this.value" 
+                            class="w-full bg-slate-900/40 border border-white/5 rounded-2xl p-4 text-sm h-24 resize-none outline-none focus:ring-1 ring-indigo-500 transition custom-scroll text-white" 
+                            placeholder="Objectif stratégique...">${goalVal}</textarea>
+                        
+                        <div class="pt-2 border-t border-white/5">
+                            <label class="text-[9px] uppercase font-bold text-indigo-400/60 mb-2 block tracking-widest italic">Notes de la semaine</label>
+                            <textarea oninput="state.weeklyComments['${key}'] = this.value" 
+                                class="w-full bg-transparent border border-white/5 rounded-xl p-3 text-xs h-16 resize-none outline-none focus:ring-1 ring-indigo-500 transition custom-scroll text-slate-400" 
+                                placeholder="Observations, victoires ou blocages...">${commentVal}</textarea>
+                        </div>
+                    </div>
+                </div>`;
+            start = end + 1; week++;
+        }
+        document.getElementById('week-month-display').innerText = monthNames[currentMonth]; 
+        injectIcons(); 
+        }
         function renderCalendar() { const grid = document.getElementById('calendar-grid'); const display = document.getElementById('current-month-display'); if (!grid || !display) return; display.innerText = monthNames[currentMonth]; grid.innerHTML = ""; const year = 2026; const first = new Date(year, currentMonth, 1).getDay(); const offset = (first === 0) ? 6 : first - 1; const daysInMonth = new Date(year, currentMonth + 1, 0).getDate(); for(let i=0; i<offset; i++) grid.innerHTML += `<div class="opacity-10"></div>`; for(let d=1; d<=daysInMonth; d++) { const key = `${year}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const tasks = state.tasks[key] || []; const done = tasks.filter(t => t.done).length; let taskListHtml = tasks.sort((a,b) => a.start.localeCompare(b.start)).map(t => `<div class="text-[9px] leading-tight truncate ${t.done ? 'line-through opacity-30 text-slate-500' : 'text-slate-300'}"><span class="text-indigo-500 font-bold">${t.start}</span> ${t.text}</div>`).join(''); grid.innerHTML += `<div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 cursor-pointer min-h-[110px] flex flex-col transition hover:border-indigo-500 group text-left"><div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-slate-500 group-hover:text-indigo-400 transition">${d}</span>${tasks.length ? `<span class="text-[8px] font-bold text-slate-600">${done}/${tasks.length}</span>` : ''}</div><div class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5">${taskListHtml}</div>${tasks.length ? `<div class="h-1 bg-slate-800 rounded-full w-full mt-1 overflow-hidden"><div class="h-full bg-indigo-500 transition-all duration-500" style="width:${(done/tasks.length)*100}%"></div></div>` : ''}</div>`; } }
 
         function openDay(key, d) { editingTaskId = null; document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-plus"></i>'; injectIcons(); document.getElementById('task-text').value = ""; document.getElementById('task-time-start').value = ""; document.getElementById('task-time-end').value = ""; document.getElementById('task-pin').value = ""; selectedDateKey = key; const dateObj = new Date(key); document.getElementById('selected-day-name').innerText = dayNamesFull[dateObj.getDay() === 0 ? 6 : dateObj.getDay()-1]; document.getElementById('selected-day-full').innerText = `${d} ${monthNames[currentMonth]} 2026`; document.getElementById('day-detail').classList.remove('hidden'); setTimeout(() => document.getElementById('day-detail').classList.remove('translate-x-full'), 10); renderTasks(); }
