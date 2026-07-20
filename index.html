@@ -24,37 +24,6 @@
         #login-screen { transition: all 0.6s ease-in-out; }
         .unlocked #login-screen { opacity: 0; pointer-events: none; transform: translateY(-100%); }
         .unlocked #main-app { display: flex; opacity: 1; transform: scale(1); }
-        .mood-btn{
-        width:28px;
-        height:28px;
-        border-radius:8px;
-        color:#fff;
-        font-size:10px;
-        font-weight:700;
-        opacity:.65;
-        transition:all .2s ease;
-        cursor:pointer;
-    }
-
-    .mood-btn:hover{
-        transform:scale(1.12);
-        opacity:1;
-        filter:brightness(1.15);
-    }
-
-    .mood-btn:focus{
-        outline:2px solid #fff;
-        outline-offset:2px;
-        transform:scale(1.08);
-        opacity:1;
-    }
-
-    .mood-btn.selected{
-        outline:2px solid #fff;
-        outline-offset:2px;
-        opacity:1;
-        transform:scale(1.05);
-    }
     </style>
 </head>
 <body class="min-h-screen">
@@ -139,8 +108,8 @@
             </div>
 
             <div class="mt-auto p-6 border-t border-slate-800">
-                <div class="flex justify-between text-[10px] mb-2 uppercase font-bold text-slate-500 tracking-widest">
-                    <span id="perf-title">Performance</span> <!-- Ajout de l'ID ici -->
+                <div class="flex justify-between text-[10px] mb-2 uppercase font-bold text-slate-500">
+                    <span>Performance</span>
                     <span id="global-perc">0%</span>
                 </div>
                 <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden"><div id="global-bar" class="bg-indigo-500 h-full w-0 transition-all duration-1000"></div></div>
@@ -150,49 +119,12 @@
         <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden"></div>
 
         <main class="flex-1 flex flex-col h-screen relative overflow-hidden">
-            <header class="h-[80px] border-b border-slate-800 flex items-center justify-between px-8 bg-[#0b0f1a]/80 backdrop-blur-xl z-30">
-                <!-- GAUCHE : Menu & Titre -->
-                <div class="flex items-center gap-5 w-1/3">
-                    <button onclick="toggleMenu()" class="text-xl text-slate-400 hover:text-indigo-400 transition">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div>
-                        <h2 id="page-title" class="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 italic">Vision Annuelle</h2>
-                    </div>
-                </div>
-
-                <!-- CENTRE : L'Horloge (Capsule Néon) -->
-                <div class="flex-1 flex justify-center">
-                    <div class="bg-black/40 border border-white/5 px-6 py-2 rounded-2xl shadow-2xl flex flex-col items-center min-w-[140px]">
-                        <div id="mada-clock" class="text-sm font-mono font-black text-white tracking-widest leading-none">00:00:00</div>
-                    </div>
-                </div>
-
-                <!-- DROITE : Badge de Mode & Contrôles -->
-                <div class="flex items-center justify-end gap-4 w-1/3">
-                    <!-- Badge Stylé (Click + Shift pour tester) -->
-                    <!-- Pilule de Mode Dynamique -->
-                <div id="mode-pill" 
-                    onmouseenter="document.getElementById('mode-text').innerText = isBossMode ? 'Unlocked' : 'Locked'"
-                    onmouseleave="document.getElementById('mode-text').innerText = isBossMode ? 'Boss Mode' : 'Employee Mode'"
-                    class="px-3 py-1.5 rounded-full border border-white/5 bg-slate-900/40 flex items-center gap-2 cursor-pointer transition-all duration-300">
-                    
-                    <div id="mode-dot" class="w-1.5 h-1.5 rounded-full bg-slate-600"></div>
-                    <span id="mode-text" class="text-[8px] font-black uppercase tracking-tighter text-slate-500">Mode</span>
-                    
-                    <!-- Bouton de confirmation intégré -->
-                    <button id="mini-lock-btn" 
-                            onclick="event.stopPropagation(); confirmPlanning();" 
-                            class="hidden ml-1 bg-indigo-600 hover:bg-indigo-500 text-[7px] text-white px-2 py-0.5 rounded-md font-black uppercase tracking-widest transition-all">
-                        Confirm
-                    </button>
-                </div>
-
-                    <div id="calendar-controls" class="hidden flex items-center gap-2 bg-slate-900 rounded-lg p-1">
-                        <button onclick="changeMonth(-1)" class="p-1 hover:text-indigo-400"><i class="fas fa-chevron-left"></i></button>
-                        <span id="current-month-display" class="text-[10px] font-bold w-20 text-center uppercase"></span>
-                        <button onclick="changeMonth(1)" class="p-1 hover:text-indigo-400"><i class="fas fa-chevron-right"></i></button>
-                    </div>
+            <header class="h-[70px] border-b flex border-slate-800 flex items-center justify-between px-6 bg-[#0b0f1a]/50 backdrop-blur z-30">
+                <button id="page-title" class="text-lg ml-auto font-bold uppercase tracking-widest text-indigo-400 font-black italic">Vision Annuelle</button>
+                <div id="calendar-controls" class="hidden flex items-center gap-4">
+                    <button onclick="changeMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                    <span id="current-month-display" class="text-sm font-bold w-24 text-center text-white">Juin</span>
+                    <button onclick="changeMonth(1)"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </header>
 
@@ -232,11 +164,9 @@
                     <div class="flex justify-between items-center mb-8">
                         <div><h3 id="selected-day-name" class="text-xl font-bold text-white">Jour</h3><p id="selected-day-full" class="text-[10px] text-indigo-400 font-bold uppercase"></p></div>
                         <div class="flex gap-2">
-                            <div id="day-actions" class="flex gap-2">
-                                <button onclick="pasteSingleTask()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-emerald-500 transition text-[10px]"><i class="fas fa-file-import"></i></button>
-                                <button onclick="copyDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]"><i class="fas fa-copy"></i></button>
-                                <button onclick="pasteDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]"><i class="fas fa-paste"></i></button>
-                            </div>
+                            <button onclick="pasteSingleTask()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-emerald-500 transition text-[10px]"><i class="fas fa-file-import"></i></button>
+                            <button onclick="copyDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]"><i class="fas fa-copy"></i></button>
+                            <button onclick="pasteDayID()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-indigo-500 transition text-[10px]"><i class="fas fa-paste"></i></button>
                             <button onclick="closeDayDetail()" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:bg-red-500 transition"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
@@ -354,9 +284,8 @@
         const dayNamesFull = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
         const ratingColors = ["#334155", "#ef4444", "#ef4444", "#f87171", "#fb923c", "#fbbf24", "#facc15", "#a3e635", "#4ade80", "#22c55e", "#16a34a", "#15803d"];
 
-        let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || { vision:{}, monthlyGoals:{}, weeklyGoals:{}, tasks:{}, dayComments:{} };
+        let state = JSON.parse(localStorage.getItem('elite_2026_vFinal')) || { vision: {}, monthlyGoals: {}, weeklyGoals: {}, tasks: {}, dayComments: {} };
         let config = JSON.parse(localStorage.getItem('elite_cloud_config')) || { token: "", gistId: "" };
-
         let currentMonth = new Date().getMonth(); 
         let selectedDateKey = null;
         let editingTaskId = null;
@@ -542,7 +471,6 @@
         }
 
         function validateTaskPin() {
-            if(!isBossMode) return;
             const pinInput = document.getElementById('task-pin');
             if(!document.getElementById('task-text').value) return;
             if (pinInput.value !== "" && pinInput.value !== "0610") document.getElementById('pin-modal').classList.remove('hidden');
@@ -566,368 +494,136 @@
             document.getElementById('task-text').value = ""; document.getElementById('task-pin').value = ""; renderTasks(); saveLocalInternally(); 
         }
 
-        // --- CONFIGURATION TEMPORELLE ---
-        let isBossMode = false;
-        let weekManuallyLocked = localStorage.getItem('week_locked') === 'true';
-        let forceDebugMode = false; // Pour le test
-        let _lastComputedMode = null; // Pour éviter d'appeler setMode 60x/sec
-
-        function getMadaTime() {
-            return new Date(new Date().toLocaleString("en-US", {timeZone: "Indian/Antananarivo"}));
-        }
-
-        function updateClock() {
-            const now = getMadaTime();
-            document.getElementById('mada-clock').innerText = now.toLocaleTimeString('fr-FR', {hour12: false});
-
-            const isSunday = now.getDay() === 0;
-            const hour = now.getHours();
-            
-            // Logique Auto + Bypass Manuel pour test
-            let newMode;
-            if (forceDebugMode) {
-                newMode = 'BOSS';
-            } else if (isSunday && hour >= 17 && !weekManuallyLocked) {
-                newMode = 'BOSS';
-            } else {
-                newMode = 'EMPLOYEE';
-            }
-            
-            // N'appeler setMode que si le mode a changé (performance)
-            if (newMode !== _lastComputedMode) {
-                _lastComputedMode = newMode;
-                setMode(newMode);
-            }
-            
-            // Reset automatique le lundi matin
-            if (now.getDay() === 1 && weekManuallyLocked) {
-                weekManuallyLocked = false;
-                localStorage.setItem('week_locked', 'false');
-            }
-
-            requestAnimationFrame(updateClock);
-        }
-
-        function setMode(mode) {
-        const pill = document.getElementById('mode-pill');
-        const dot = document.getElementById('mode-dot');
-        const txt = document.getElementById('mode-text');
-        const lockBtn = document.getElementById('mini-lock-btn'); // Bouton Confirm
-        const taskForm = document.getElementById('task-form');
-        const dayActions = document.getElementById('day-actions');
-        const inputs = document.querySelectorAll('textarea');
-
-        if (mode === 'BOSS') {
-            isBossMode = true;
-            txt.innerText = "Boss Mode";
-            txt.className = "text-[8px] font-black uppercase tracking-tighter text-indigo-400";
-            dot.className = "w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_#6366f1] animate-pulse";
-            pill.style.borderColor = "rgba(99, 102, 241, 0.3)";
-            
-            if(lockBtn) lockBtn.classList.remove('hidden'); // Affiche le bouton Confirm
-            if(taskForm) taskForm.classList.remove('hidden');
-            if(dayActions) dayActions.classList.remove('hidden');
-        } else {
-            isBossMode = false;
-            txt.innerText = "Employee Mode";
-            txt.className = "text-[8px] font-black uppercase tracking-tighter text-slate-500";
-            dot.className = "w-1.5 h-1.5 rounded-full bg-slate-600";
-            pill.style.borderColor = "rgba(255, 255, 255, 0.05)";
-            
-            if(lockBtn) lockBtn.classList.add('hidden'); // Cache le bouton Confirm
-            if(taskForm) taskForm.classList.add('hidden');
-            if(dayActions) dayActions.classList.add('hidden');
-        }
-        if(selectedDateKey) renderTasks(); 
-    }
-
-        function confirmPlanning() {
-        if (confirm("Valider le planning ? Toute modification sera bloquée jusqu'au dimanche prochain 17h00.")) {
-            weekManuallyLocked = true;
-            localStorage.setItem('week_locked', 'true');
-            forceDebugMode = false; // Désactive le bypass debug mode pour appliquer le lock
-            _lastComputedMode = null; // Force le recalcul du mode
-            confetti({ particleCount: 200, spread: 80, origin: { y: 0.7 } });
-            setMode('EMPLOYEE'); // Repasse en Employee Mode immédiatement
-        }
-    }
-
-        function lockWeek() {
-            weekManuallyLocked = true;
-            localStorage.setItem('week_locked', 'true');
-            confetti({ particleCount: 150, spread: 60, origin: { y: 0.8 } });
-            refreshUI();
-        }
-
         function renderTasks() {
-        const list = document.getElementById('day-tasks');
-        const tasks = state.tasks[selectedDateKey] || [];
-        
-        // On cache les boutons d'édition si on n'est pas en Boss Mode
-        const actionButtons = (t) => {
-            const copyBtn = isBossMode ? `<button onclick="copySingleTask(${t.id})" class="text-slate-500 hover:text-white transition"><i class="fas fa-clone text-xs"></i></button>` : '';
-            const fingerprintBtn = t.unlocked ? `<button onclick="toggleSecret(${t.id})" class="text-slate-500 hover:text-indigo-400 transition"><i class="fas fa-fingerprint text-xs ${t.secretOpen ? 'text-indigo-400' : ''}"></i></button>` : '';
-            const editBtn = isBossMode ? `<button onclick="editTask(${t.id})" class="text-slate-500 hover:text-white transition"><i class="fas fa-pen-alt text-xs"></i></button>` : '';
-            const deleteBtn = isBossMode ? `<button onclick="deleteTask(${t.id})" class="text-slate-500 hover:text-red-500 transition"><i class="fas fa-trash-alt text-xs"></i></button>` : '';
-            
-            return `<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition items-center">
-                ${copyBtn}
-                ${fingerprintBtn}
-                ${editBtn}
-                ${deleteBtn}
-            </div>`;
-        };
-
-        list.innerHTML = tasks.sort((a,b) => a.start.localeCompare(b.start)).map(t => {
-            // Section secrète
-            const secretSection = (t.unlocked && t.secretOpen) ? `
-    <div class="mt-4 p-3 bg-black/40 rounded-xl border border-white/10 space-y-3">
-        <div>
-            <p class="text-[9px] uppercase font-bold text-indigo-400 mb-2">Mood Level</p>
-            <div class="flex gap-1">
-                ${[1,2,3,4,5,6,7,8,9,10].map(val => `
-                    <button onclick="setStat(${t.id}, 'mood', ${val})"
-                            class="mood-btn ${t.mood === val ? 'selected' : ''}"
-                            style="background:${ratingColors[val]}">
-                        ${val}
-                    </button>
-                `).join('')}
-            </div>
-        </div>
-
-        <div>
-            <p class="text-[9px] uppercase font-bold text-indigo-400 mb-2">Energy Level</p>
-            <div class="flex gap-1">
-                ${[1,2,3,4,5,6,7,8,9,10].map(val => `
-                    <button onclick="setStat(${t.id}, 'energy', ${val})"
-                            class="mood-btn ${t.energy === val ? 'selected' : ''}"
-                            style="background:${ratingColors[val]}">
-                        ${val}
-                    </button>
-                `).join('')}
-            </div>
-        </div>
-    </div>
-` : '';
-
-            // Barres de progression Mood et Energy si unlocked avec contrastes de couleurs
-            const moodVal = t.mood || 0;
-            const energyVal = t.energy || 0;
-            const moodColorClass = moodVal <= 3 ? 'bg-red-500' : (moodVal <= 7 ? 'bg-amber-500' : 'bg-emerald-500');
-            const energyColorClass = energyVal <= 3 ? 'bg-red-500' : (energyVal <= 7 ? 'bg-amber-500' : 'bg-emerald-500');
-
-            const moodPerc = moodVal * 10;
-const energyPerc = energyVal * 10;
-
-const progressBars = t.unlocked && (moodVal > 0 || energyVal > 0) ? `
-    <div class="mt-2 space-y-2 opacity-80 max-w-[280px]">
-        ${moodVal > 0 ? `
-        <div class="flex items-center gap-3">
-            <div class="flex-1 bg-slate-800 h-1 rounded-full overflow-hidden">
-                <div class="h-full transition-all" 
-                     style="width:${moodPerc}%; background:${ratingColors[t.mood]}">
-                </div>
-            </div>
-            <span class="text-[8px] font-bold text-slate-500 w-16 text-left">
-                MOOD ${t.mood}
-            </span>
-        </div>` : ''}
-
-        ${energyVal > 0 ? `
-        <div class="flex items-center gap-3">
-            <div class="flex-1 bg-slate-800 h-1 rounded-full overflow-hidden">
-                <div class="h-full transition-all" 
-                     style="width:${energyPerc}%; background:${ratingColors[t.energy]}">
-                </div>
-            </div>
-            <span class="text-[8px] font-bold text-slate-500 w-16 text-left">
-                ENERGY ${energyPerc}%
-            </span>
-        </div>` : ''}
-    </div>
-` : '';
-
-            return `<div class="flex flex-col p-4 bg-slate-900/60 rounded-2xl border border-white/5 mb-2 shadow-sm text-left group">
-                <div class="flex items-start gap-4">
-                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-4 h-4 accent-indigo-500 mt-1 flex-shrink-0">
-                    <div class="flex-1 text-sm text-left">
-                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">${t.start} — ${t.end}</p>
-                        <p class="${t.done ? 'line-through opacity-40' : 'text-white'}">${t.text}</p>
-                        ${progressBars}
+            const list = document.getElementById('day-tasks');
+            const tasks = state.tasks[selectedDateKey] || [];
+            list.innerHTML = tasks.sort((a,b) => a.start.localeCompare(b.start)).map(t => {
+                const moodPerc = t.mood * 10;
+                const energyPerc = t.energy * 10;
+                const barsHtml = t.unlocked && (t.mood > 0 || t.energy > 0) ? `
+                <div class="mt-2 space-y-2 opacity-80 max-w-[280px]">
+                    ${t.mood > 0 ? `<div class="flex items-center gap-3"><div class="flex-1 bg-slate-800 h-1 rounded-full overflow-hidden"><div class="h-full transition-all" style="width:${moodPerc}%; background:${ratingColors[t.mood]}"></div></div><span class="text-[8px] font-bold text-slate-500 w-16 text-left">MOOD ${t.mood}</span></div>` : ''}
+                    ${t.energy > 0 ? `<div class="flex items-center gap-3"><div class="flex-1 bg-slate-800 h-1 rounded-full overflow-hidden"><div class="h-full transition-all" style="width:${energyPerc}%; background:${ratingColors[t.energy]}"></div></div><span class="text-[8px] font-bold text-slate-500 w-16 text-left">ENERGY ${energyPerc}%</span></div>` : ''}
+                </div>` : "";
+                return `
+                <div class="flex flex-col p-4 bg-slate-900/60 rounded-2xl border border-white/5 group transition mb-2 text-left">
+                    <div class="flex items-center gap-4">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id})" class="w-4 h-4 accent-indigo-500 cursor-pointer">
+                        <div class="flex-1 text-sm"><p class="text-[10px] text-indigo-400 font-bold uppercase">${t.start} — ${t.end}</p><p class="${t.done ? 'line-through opacity-40 text-slate-500' : ''}">${t.text}</p>${barsHtml}</div>
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition"><button onclick="copySingleTask(${t.id})"><i class="fas fa-clone text-xs text-slate-500"></i></button>${t.unlocked ? `<button onclick="toggleSecret(${t.id})" class="text-slate-500 hover:text-indigo-400"><i class="fas fa-fingerprint text-xs"></i></button>` : ''}<button onclick="editTask(${t.id})"><i class="fas fa-pen-alt text-xs text-slate-500"></i></button><button onclick="deleteTask(${t.id})"><i class="fas fa-trash-alt text-xs text-slate-500 hover:text-red-500"></i></button></div>
                     </div>
-                    ${actionButtons(t)}
-                </div>
-                ${secretSection}
-            </div>`;
-        }).join('');
-        
-        // Reset du verrouillage automatique au prochain dimanche
-        const now = getMadaTime();
-        if(now.getDay() === 1) { // Si on est lundi, on réinitialise le verrou pour le dimanche suivant
-            localStorage.setItem('week_locked', 'false');
-            weekManuallyLocked = false;
+                    <div class="${t.secretOpen ? '' : 'hidden'} mt-4 p-3 bg-black/40 rounded-xl border border-white/10 space-y-3">
+                        <div><p class="text-[9px] uppercase font-bold text-indigo-400 mb-2">Mood Level</p><div class="flex gap-1">${[1,2,3,4,5,6,7,8,9,10].map(v => `<button onclick="setStat(${t.id}, 'mood', ${v})" class="mood-btn ${t.mood === v ? 'selected' : ''}" style="background:${ratingColors[v]}">${v}</button>`).join('')}</div></div>
+                        <div><p class="text-[9px] uppercase font-bold text-indigo-400 mb-2">Energy Level</p><div class="flex gap-1">${[1,2,3,4,5,6,7,8,9,10].map(v => `<button onclick="setStat(${t.id}, 'energy', ${v})" class="mood-btn ${t.energy === v ? 'selected' : ''}" style="background:${ratingColors[v]}">${v}</button>`).join('')}</div></div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('day-comment').value = state.dayComments[selectedDateKey] || "";
+            injectIcons(); 
         }
-        document.getElementById('day-comment').value = state.dayComments[selectedDateKey] || "";
-        injectIcons(); 
-        }
-
 
         function setStat(taskId, stat, val) { const t = state.tasks[selectedDateKey].find(x => x.id === taskId); t[stat] = val; renderTasks(); saveLocalInternally(); }
         function toggleTask(id) { const t = state.tasks[selectedDateKey].find(x => x.id === id); if(t) { t.done = !t.done; if(t.done) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, zIndex: 9999 }); } renderTasks(); updateProgress(); saveLocalInternally(); }
         function saveDayComment() { state.dayComments[selectedDateKey] = document.getElementById('day-comment').value; saveLocalInternally(); }
         function toggleSecret(id) { const t = state.tasks[selectedDateKey].find(x => x.id === id); t.secretOpen = !t.secretOpen; renderTasks(); }
-        function deleteTask(id) { if(!isBossMode) return; state.tasks[selectedDateKey] = state.tasks[selectedDateKey].filter(x => x.id !== id); if (editingTaskId === id) editingTaskId = null; renderTasks(); updateProgress(); saveLocalInternally(); }
-        function editTask(id) { if(!isBossMode) return; const t = state.tasks[selectedDateKey].find(x => x.id === id); document.getElementById('task-text').value = t.text; document.getElementById('task-time-start').value = t.start; document.getElementById('task-time-end').value = t.end; editingTaskId = id; document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-check"></i>'; injectIcons(); }
+        function deleteTask(id) { state.tasks[selectedDateKey] = state.tasks[selectedDateKey].filter(x => x.id !== id); if (editingTaskId === id) editingTaskId = null; renderTasks(); updateProgress(); saveLocalInternally(); }
+        function editTask(id) { const t = state.tasks[selectedDateKey].find(x => x.id === id); document.getElementById('task-text').value = t.text; document.getElementById('task-time-start').value = t.start; document.getElementById('task-time-end').value = t.end; editingTaskId = id; document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-check"></i>'; injectIcons(); }
         function copySingleTask(id) { const t = state.tasks[selectedDateKey].find(x => x.id === id); navigator.clipboard.writeText(btoa(unescape(encodeURIComponent(JSON.stringify(t))))).then(() => alert("Copié !")); }
-        function pasteSingleTask() { if(!isBossMode) return; const id = prompt("ID tâche :"); if (!id) return; try { const t = JSON.parse(decodeURIComponent(escape(atob(id)))); state.tasks[selectedDateKey].push({ ...t, id: Date.now(), done: false }); renderTasks(); updateProgress(); saveLocalInternally(); } catch(e) { alert("ID invalide."); } }
+        function pasteSingleTask() { const id = prompt("ID tâche :"); if (!id) return; try { const t = JSON.parse(decodeURIComponent(escape(atob(id)))); state.tasks[selectedDateKey].push({ ...t, id: Date.now(), done: false }); renderTasks(); updateProgress(); saveLocalInternally(); } catch(e) { alert("ID invalide."); } }
         function copyDayID() { navigator.clipboard.writeText(btoa(unescape(encodeURIComponent(JSON.stringify(state.tasks[selectedDateKey] || []))))).then(() => alert("ID Journée Copié !")); }
-        function pasteDayID() { if(!isBossMode) return; const id = prompt("ID journée :"); if (!id) return; try { const tasks = JSON.parse(decodeURIComponent(escape(atob(id)))); state.tasks[selectedDateKey] = tasks.map(t => ({ ...t, id: Date.now() + Math.random(), done: false })); renderTasks(); updateProgress(); saveLocalInternally(); } catch (e) { alert("ID invalide."); } }
+        function pasteDayID() { const id = prompt("ID journée :"); if (!id) return; try { const tasks = JSON.parse(decodeURIComponent(escape(atob(id)))); state.tasks[selectedDateKey] = tasks.map(t => ({ ...t, id: Date.now() + Math.random(), done: false })); renderTasks(); updateProgress(); saveLocalInternally(); } catch (e) { alert("ID invalide."); } }
 
-        function renderMonths() {const grid = document.getElementById('months-grid'); grid.innerHTML = monthNames.map((name, i) => `<div class="glass p-5 rounded-3xl border border-slate-800 text-left"><h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 italic">${name}</h3><textarea  oninput="state.monthlyGoals[${i}] = this.value; saveLocalInternally()" class="w-full bg-transparent h-24 outline-none text-sm resize-none custom-scroll placeholder:text-slate-800">${state.monthlyGoals[i] || ""}</textarea></div>`).join(''); }
+        function renderMonths() { const grid = document.getElementById('months-grid'); grid.innerHTML = monthNames.map((name, i) => `<div class="glass p-5 rounded-3xl border border-slate-800 text-left"><h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-4 italic">${name}</h3><textarea oninput="state.monthlyGoals[${i}] = this.value; saveLocalInternally()" class="w-full bg-transparent h-24 outline-none text-sm resize-none custom-scroll placeholder:text-slate-800">${state.monthlyGoals[i] || ""}</textarea></div>`).join(''); }
         function renderWeeklyGoals() {
         const container = document.getElementById('weeks-list');
-        if(!container) return;
+        if(!container) return; 
         container.innerHTML = "";
-        
-        // Ajout du bouton d'activation si on est dimanche et mode Boss
-        if (isBossMode) {
-            container.innerHTML = `
-                <div class="flex justify-center mb-6">
-                    <button onclick="lockWeek()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black px-10 py-4 rounded-2xl shadow-xl transition-all uppercase tracking-[0.2em]">
-                        Activer la semaine & Verrouiller
-                    </button>
-                </div>
-            `;
-        }
-
         const year = 2026;
         const lastDay = new Date(year, currentMonth + 1, 0).getDate();
         let start = 1, week = 1;
-        let html = "";
+        
+        while (start <= lastDay) {
+            let d = new Date(year, currentMonth, start);
+            let end = start + (d.getDay() === 0 ? 0 : 7 - d.getDay());
+            if (end > lastDay) end = lastDay;
+            const key = `${year}-${currentMonth}-w${week}`;
+            
+            const goalVal = state.weeklyGoals[key] || "";
+            const commentVal = state.weeklyComments[key] || ""; // Récupère le commentaire
 
-while (start <= lastDay) {
-    let d = new Date(year, currentMonth, start);
-    let end = start + (d.getDay() === 0 ? 0 : 7 - d.getDay());
-    if (end > lastDay) end = lastDay;
-
-    const key = `2026-${currentMonth}-w${week}`;
-
-
-    const goalVal = state.weeklyGoals[key] || "";
-    const commentVal = state.weeklyComments[key] || "";
-
-    html += `
-        <div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row gap-6 transition hover:border-indigo-500/20 text-left shadow-lg">
-            <div class="md:w-44 border-l-2 border-indigo-500 pl-4 flex-shrink-0 text-white">
-                <span class="text-[10px] font-black uppercase italic">Semaine 0${week}</span>
-                <span class="text-[11px] font-bold text-slate-500 block tracking-tight">
-                    Du ${start} au ${end} ${monthNames[currentMonth]}
-                </span>
-            </div>
-
-            <div class="flex-1 space-y-4">
-
-                <textarea 
-                    oninput="state.weeklyGoals['${key}'] = this.value"
-                    class="w-full bg-slate-900/40 border border-white/5 rounded-2xl p-4 text-sm h-24 resize-none outline-none focus:ring-1 ring-indigo-500 transition custom-scroll text-white"
-                    placeholder="Objectif stratégique...">${goalVal}</textarea>
-
-                <div class="pt-2 border-t border-white/5">
-                    <label class="text-[9px] uppercase font-bold text-indigo-400/60 mb-2 block tracking-widest italic">
-                        Notes de la semaine
-                    </label>
-
-                    <textarea 
-                        oninput="state.weeklyComments['${key}'] = this.value"
-                        class="w-full bg-transparent border border-white/5 rounded-xl p-3 text-xs h-16 resize-none outline-none focus:ring-1 ring-indigo-500 transition custom-scroll text-slate-400"
-                        placeholder="Observations, victoires ou blocages...">${commentVal}</textarea>
-                </div>
-
-            </div>
-        </div>`;
-
-    start = end + 1;
-    week++;
-}
-
-container.innerHTML += html;}
+            container.innerHTML += `
+                <div class="glass p-6 rounded-3xl border border-slate-800 flex flex-col md:flex-row gap-6 transition hover:border-indigo-500/20 text-left shadow-lg">
+                    <div class="md:w-44 border-l-2 border-indigo-500 pl-4 flex-shrink-0 text-white">
+                        <span class="text-[10px] font-black uppercase italic">Semaine 0${week}</span>
+                        <span class="text-[11px] font-bold text-slate-500 block tracking-tight">Du ${start} au ${end} ${monthNames[currentMonth]}</span>
+                    </div>
+                    <div class="flex-1 space-y-4">
+                        <textarea oninput="state.weeklyGoals['${key}'] = this.value" 
+                            class="w-full bg-slate-900/40 border border-white/5 rounded-2xl p-4 text-sm h-24 resize-none outline-none focus:ring-1 ring-indigo-500 transition custom-scroll text-white" 
+                            placeholder="Objectif stratégique...">${goalVal}</textarea>
+                        
+                        <div class="pt-2 border-t border-white/5">
+                            <label class="text-[9px] uppercase font-bold text-indigo-400/60 mb-2 block tracking-widest italic">Notes de la semaine</label>
+                            <textarea oninput="state.weeklyComments['${key}'] = this.value" 
+                                class="w-full bg-transparent border border-white/5 rounded-xl p-3 text-xs h-16 resize-none outline-none focus:ring-1 ring-indigo-500 transition custom-scroll text-slate-400" 
+                                placeholder="Observations, victoires ou blocages...">${commentVal}</textarea>
+                        </div>
+                    </div>
+                </div>`;
+            start = end + 1; week++;
+        }
+        document.getElementById('week-month-display').innerText = monthNames[currentMonth]; 
+        injectIcons(); 
+        }
         function renderCalendar() { const grid = document.getElementById('calendar-grid'); const display = document.getElementById('current-month-display'); if (!grid || !display) return; display.innerText = monthNames[currentMonth]; grid.innerHTML = ""; const year = 2026; const first = new Date(year, currentMonth, 1).getDay(); const offset = (first === 0) ? 6 : first - 1; const daysInMonth = new Date(year, currentMonth + 1, 0).getDate(); for(let i=0; i<offset; i++) grid.innerHTML += `<div class="opacity-10"></div>`; for(let d=1; d<=daysInMonth; d++) { const key = `${year}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const tasks = state.tasks[key] || []; const done = tasks.filter(t => t.done).length; let taskListHtml = tasks.sort((a,b) => a.start.localeCompare(b.start)).map(t => `<div class="text-[9px] leading-tight truncate ${t.done ? 'line-through opacity-30 text-slate-500' : 'text-slate-300'}"><span class="text-indigo-500 font-bold">${t.start}</span> ${t.text}</div>`).join(''); grid.innerHTML += `<div onclick="openDay('${key}', ${d})" class="glass p-2 rounded-xl border border-slate-800 cursor-pointer min-h-[110px] flex flex-col transition hover:border-indigo-500 group text-left"><div class="flex justify-between items-center mb-1"><span class="text-xs font-bold text-slate-500 group-hover:text-indigo-400 transition">${d}</span>${tasks.length ? `<span class="text-[8px] font-bold text-slate-600">${done}/${tasks.length}</span>` : ''}</div><div class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-0.5">${taskListHtml}</div>${tasks.length ? `<div class="h-1 bg-slate-800 rounded-full w-full mt-1 overflow-hidden"><div class="h-full bg-indigo-500 transition-all duration-500" style="width:${(done/tasks.length)*100}%"></div></div>` : ''}</div>`; } }
 
         function openDay(key, d) { editingTaskId = null; document.getElementById('add-task-btn').innerHTML = '<i class="fas fa-plus"></i>'; injectIcons(); document.getElementById('task-text').value = ""; document.getElementById('task-time-start').value = ""; document.getElementById('task-time-end').value = ""; document.getElementById('task-pin').value = ""; selectedDateKey = key; const dateObj = new Date(key); document.getElementById('selected-day-name').innerText = dayNamesFull[dateObj.getDay() === 0 ? 6 : dateObj.getDay()-1]; document.getElementById('selected-day-full').innerText = `${d} ${monthNames[currentMonth]} 2026`; document.getElementById('day-detail').classList.remove('hidden'); setTimeout(() => document.getElementById('day-detail').classList.remove('translate-x-full'), 10); renderTasks(); }
         function closeDayDetail() { document.getElementById('day-detail').classList.add('translate-x-full'); setTimeout(() => { document.getElementById('day-detail').classList.add('hidden'); renderCalendar(); }, 300); }
-        function updateProgress() {
-        checkState();
-        let total = 0, done = 0;
-        
-        // On cible exactement le mois affiché (ex: 2026-06)
-        const monthPrefix = `2026-${String(currentMonth + 1).padStart(2, '0')}`;
-
-        for (const [date, dayTasks] of Object.entries(state.tasks || {})) {
-            if (date.startsWith(monthPrefix) && Array.isArray(dayTasks)) {
-                for (const t of dayTasks) {
-                    total++;
-                    if (t.done) done++;
-                }
-            }
-        }
-
-        const p = total === 0 ? 0 : Math.round((done / total) * 100);
-        
-        const bar = document.getElementById('global-bar');
-        const percText = document.getElementById('global-perc');
-        const title = document.getElementById('perf-title');
-
-        if (bar) bar.style.width = p + '%';
-        if (percText) percText.innerText = p + '%';
-        if (title) title.innerText = "Performance " + monthNames[currentMonth];
-        }
+        function updateProgress() { let total = 0, done = 0; Object.values(state.tasks || {}).forEach(dayTasks => { if (Array.isArray(dayTasks)) { dayTasks.forEach(t => { total++; if (t.done) done++; }); } }); const p = total === 0 ? 0 : Math.round((done / total) * 100); const bar = document.getElementById('global-bar'); const percText = document.getElementById('global-perc'); if (bar) bar.style.width = p + '%'; if (percText) percText.innerText = p + '%'; }
         async function refreshUI() {
-        checkState();
-        
-        // Remplissage sécurisé des champs de texte
-        const goalEl = document.getElementById('year-vision');
-        const whyEl = document.getElementById('year-why');
-        const resEl = document.getElementById('year-results');
-        
-        if (goalEl) goalEl.value = state.vision.goal || "";
-        if (whyEl) whyEl.value = state.vision.why || "";
-        if (resEl) resEl.value = state.vision.results || "";
+        const splashStep = document.getElementById('splash-step');
+        try {
+            checkState();
+            if(splashStep) splashStep.innerText = "Synchronisation des données...";
+            
+            // Remplissage des champs
+            const fields = {
+                'year-vision': state.vision.goal,
+                'year-why': state.vision.why,
+                'year-results': state.vision.results,
+                'gh-token': config.token,
+                'gh-gist': config.gistId
+            };
 
-        // Mise à jour de la config database
-        const tokenEl = document.getElementById('gh-token');
-        const gistEl = document.getElementById('gh-gist');
-        if (tokenEl) tokenEl.value = config.token || "";
-        if (gistEl) gistEl.value = config.gistId || "";
-        
-        updateProgress(); 
-        renderCalendar();
-        renderWeeklyGoals();
-        updateOnlineStatus();
+            for (const [id, val] of Object.entries(fields)) {
+                const el = document.getElementById(id);
+                if (el) el.value = val || "";
+            }
+            
+            updateProgress();
+            renderCalendar();
+            renderWeeklyGoals();
+            updateOnlineStatus();
 
-        // Injection des icônes SVG
-        await injectIcons();
+            if(splashStep) splashStep.innerText = "Injection des icônes SVG...";
+            
+            // On attend la fin de l'injection
+            await injectIcons();
 
-        // Fermeture du Splash Screen
-        const splash = document.getElementById('splash-screen');
-        if (splash) {
-            splash.style.opacity = '0';
-            setTimeout(() => splash.remove(), 500);
+        } catch (e) {
+            console.error("Erreur durant le refresh:", e);
+        } finally {
+            // QUOI QU'IL ARRIVE, on retire le splash screen après un court délai
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.remove(), 700);
+                }
+            }, 800);
         }
     }
-        function changeMonth(dir) { 
-            // 1. Mise à jour de l'index (0-11)
-            currentMonth = (currentMonth + dir + 12) % 12; 
-            
-            // 2. Recalcul immédiat de la barre de performance
-            updateProgress();
-            
-            // 3. Re-rendu des vues (Calendrier et Semaines)
-            renderCalendar(); 
-            renderWeeklyGoals();
-            
-            // 4. Ré-injection des icônes SVG (car le HTML a été ré-écrit)
-            injectIcons();
-        }
+        function changeMonth(dir) { currentMonth = (currentMonth + dir + 12) % 12; renderCalendar(); renderWeeklyGoals(); injectIcons();}
         function toggleMenu() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); document.getElementById('overlay').classList.toggle('hidden'); }
         function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
         function saveConfig() { config.token = document.getElementById('gh-token').value; config.gistId = document.getElementById('gh-gist').value; localStorage.setItem('elite_cloud_config', JSON.stringify(config)); alert("Config sauvegardée !"); }
@@ -936,18 +632,18 @@ container.innerHTML += html;}
         document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && document.body.classList.contains('unlocked')) { const panel = document.getElementById('day-detail'); if (panel && !panel.classList.contains('hidden') && document.activeElement.id !== 'day-comment' && document.activeElement.id !== 'main-pin-input') { validateTaskPin(); } } });
 
         window.onload = () => {
-        updateClock();
-        // 1. On prépare tout en arrière-plan
-        refreshUI();
-        
-        // 2. On s'assure que la page par défaut est la home
-        showPage('home');
-        
-        // 3. Focus automatique sur le PIN pour gagner du temps
-        const pinInput = document.getElementById('main-pin-input');
-        if(pinInput) pinInput.focus();
-    };
+    // On lance le processus de rendu qui va lui-même fermer le splash
+    refreshUI();
+    
+    // On force l'affichage de la home
+    showPage('home');
+
+    // Sécurité ultime : si le splash est encore là après 5s (erreur critique), on le vire
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if(splash) splash.remove();
+    }, 5000);
+};
     </script>
 </body>
 </html>
-    
